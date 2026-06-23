@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens — dark "engine / terminal" aesthetic                 */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-bg: #07080a;
+  --color-bg-soft: #0b0d11;
+  --color-panel: #0e1116;
+  --color-panel-2: #12161c;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.14);
+
+  --color-fg: #e9edf1;
+  --color-muted: #8b94a3;
+  --color-faint: #5b6472;
+
+  --color-accent: #4ade80;
+  --color-accent-soft: #34d399;
+  --color-cyan: #22d3ee;
+  --color-amber: #fbbf24;
+  --color-rose: #fb7185;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(74, 222, 128, 0.25), 0 0 28px -6px rgba(74, 222, 128, 0.45);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(74, 222, 128, 0.28);
+    color: #ffffff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1b2027;
+    border-radius: 999px;
+    border: 2px solid var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #262d36;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Utilities                                                          */
+/* ------------------------------------------------------------------ */
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* faint grid + dot field used behind the hero / dashboards */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(100deg, #ffffff 0%, #c7f7d8 40%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glow-accent {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)) ,
+      var(--color-panel);
+    border: 1px solid var(--color-line);
+  }
+
+  .ring-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px rgba(74, 222, 128, 0.5);
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.8); }
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-rise {
+    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* ---- gamer hero fx ---- */
+  .text-glow {
+    text-shadow: 0 0 28px rgba(74, 222, 128, 0.55), 0 0 4px rgba(74, 222, 128, 0.4);
+  }
+  .neon-ring {
+    box-shadow:
+      0 0 0 1px rgba(74, 222, 128, 0.3),
+      0 0 50px -12px rgba(74, 222, 128, 0.55),
+      inset 0 0 40px -24px rgba(34, 211, 238, 0.5);
+  }
+
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  .animate-float { animation: float-y 6s ease-in-out infinite; }
+  .animate-float-slow { animation: float-y 9s ease-in-out infinite; }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 1; }
+  }
+  .animate-glow { animation: glow-pulse 3.2s ease-in-out infinite; }
+
+  @keyframes spin-slow { to { transform: rotate(360deg); } }
+  .animate-spin-slow { animation: spin-slow 16s linear infinite; }
+
+  @keyframes grid-pan {
+    from { background-position: 0 0; }
+    to { background-position: 56px 56px; }
+  }
+  .animate-grid { animation: grid-pan 7s linear infinite; }
+
+  @keyframes bar-fill { from { width: 0 !important; } }
+  .animate-bar { animation: bar-fill 1.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-panel-2);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+}
