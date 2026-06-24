@@ -1,6 +1,22 @@
 "use client";
 
+import type { Classification } from "@/lib/chess-review";
+
 type Orientation = "white" | "black";
+
+const BADGE: Record<Classification, { color: string; symbol: string }> = {
+  brilliant: { color: "#26c2a3", symbol: "!!" },
+  great: { color: "#5b9bd5", symbol: "!" },
+  best: { color: "#81b64c", symbol: "★" },
+  excellent: { color: "#81b64c", symbol: "✓" },
+  good: { color: "#95b776", symbol: "✓" },
+  book: { color: "#a88865", symbol: "▦" },
+  inaccuracy: { color: "#f7c631", symbol: "?!" },
+  miss: { color: "#fa412d", symbol: "✗" },
+  mistake: { color: "#e58f2a", symbol: "?" },
+  blunder: { color: "#fa412d", symbol: "??" },
+  forced: { color: "#9aa0a6", symbol: "□" },
+};
 
 const GLYPH: Record<string, string> = {
   k: "♚",
@@ -20,6 +36,7 @@ interface BoardProps {
   lastMove?: { from: string; to: string } | null;
   arrow?: { from: string; to: string } | null;
   checkSquare?: string | null;
+  badge?: { square: string; classification: Classification } | null;
 }
 
 export function Board({
@@ -28,6 +45,7 @@ export function Board({
   lastMove,
   arrow,
   checkSquare,
+  badge,
 }: BoardProps) {
   const pieces = parseFen(fen);
 
@@ -136,6 +154,30 @@ export function Board({
 
       {/* best-move arrow */}
       {arrow && <Arrow from={arrow.from} to={arrow.to} orientation={orientation} />}
+
+      {/* classification badge on the move's destination square */}
+      {badge && (() => {
+        const { x, y } = sqXY(badge.square, orientation);
+        const style = BADGE[badge.classification];
+        const cx = x + 0.82;
+        const cy = y + 0.18;
+        return (
+          <g style={{ pointerEvents: "none" }}>
+            <circle cx={cx} cy={cy} r={0.26} fill={style.color} stroke="#0b0e13" strokeWidth={0.04} />
+            <text
+              x={cx}
+              y={cy + 0.012}
+              fontSize={style.symbol.length > 1 ? 0.26 : 0.34}
+              fontWeight={700}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="#ffffff"
+            >
+              {style.symbol}
+            </text>
+          </g>
+        );
+      })()}
     </svg>
   );
 }

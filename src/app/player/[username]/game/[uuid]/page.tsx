@@ -96,6 +96,7 @@ export default async function GameReviewPage({ params }: PageProps) {
           whiteName={game.white.username}
           blackName={game.black.username}
           playerColor={playerColor}
+          result={whiteWon ? "1-0" : blackWon ? "0-1" : "½-½"}
         />
       ) : (
         <div className="panel rounded-2xl p-6 text-sm text-muted">

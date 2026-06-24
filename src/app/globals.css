@@ -168,6 +168,20 @@
   @keyframes bar-fill { from { width: 0 !important; } }
   .animate-bar { animation: bar-fill 1.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+  /* indeterminate progress bar (used on loading screens) */
+  @keyframes indeterminate {
+    0% { left: -45%; width: 45%; }
+    50% { left: 25%; width: 55%; }
+    100% { left: 100%; width: 45%; }
+  }
+  .animate-indeterminate {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    animation: indeterminate 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
   @keyframes shimmer {
     100% { transform: translateX(100%); }
   }

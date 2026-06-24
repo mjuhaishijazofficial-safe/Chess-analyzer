@@ -1,43 +1,72 @@
 /**
- * UCI driver for a self-hosted Stockfish engine running in a Web Worker.
+ * UCI driver for self-hosted Stockfish 18 (NNUE) running in a Web Worker.
  *
- * The worker is built from a tiny Blob that `importScripts()` the self-contained
- * asm.js Stockfish build. This is deliberately the most robust setup possible:
- *   - Blob worker  → bypasses any bundler `new Worker()` transforms
- *   - importScripts → classic same-origin load, no module/MIME constraints
- *   - asm.js build  → no separate .wasm fetch, no streaming-instantiate quirks
+ * Engine selection, strongest first:
+ *   1. stockfish-18-lite.js        — multi-threaded NNUE (needs SharedArrayBuffer
+ *                                     i.e. a cross-origin-isolated page)
+ *   2. stockfish-18-lite-single.js — single-threaded NNUE (works everywhere)
+ *   3. stockfish.js                — 2019 asm.js build (last-ditch fallback)
  *
- * We also ping `uci` until the engine answers `uciok`, which covers the race
- * where early commands are dropped before the engine registers its handler.
- * Verbose console logs are emitted under the `[engine]` tag for debugging.
+ * These builds load an external .wasm whose URL is derived from the worker
+ * script (`.js → .wasm`), so we must use a DIRECT same-origin worker (no blob).
+ * We run with MultiPV 2 so the reviewer can tell "only good move" situations
+ * apart from positions with several decent options.
  */
 
-export interface EngineLine {
+export interface PvLine {
+  scoreCp: number | null; // side-to-move perspective
+  mate: number | null; // side-to-move perspective
+  move: string | null; // first move of the PV, UCI
+  pv: string[]; // UCI moves
+}
+
+export interface EngineEval {
   depth: number;
-  scoreCp: number | null;
-  mate: number | null;
+  lines: PvLine[]; // index 0 = best (multipv 1), index 1 = 2nd best
   bestMove: string | null;
-  pv: string[];
+}
+
+export interface AnalyzeOpts {
+  depth?: number;
+  movetime?: number; // milliseconds
 }
 
 interface Job {
   fen: string;
-  depth: number;
-  resolve: (line: EngineLine) => void;
+  opts: AnalyzeOpts;
+  resolve: (e: EngineEval) => void;
 }
 
-const ENGINE_PATH = "/engine/stockfish.js"; // self-contained asm.js build
-const INIT_TIMEOUT = 20000;
-const SEARCH_TIMEOUT = 20000;
+const ASSET = {
+  mt: "/engine/stockfish-18-lite.js",
+  single: "/engine/stockfish-18-lite-single.js",
+  asm: "/engine/stockfish.js",
+};
+
+const INIT_TIMEOUT = 25000;
+const SEARCH_TIMEOUT = 30000;
+const MULTIPV = 2;
+
+function isolated(): boolean {
+  return (
+    typeof SharedArrayBuffer !== "undefined" &&
+    typeof globalThis !== "undefined" &&
+    (globalThis as unknown as { crossOriginIsolated?: boolean })
+      .crossOriginIsolated === true
+  );
+}
 
 export class Engine {
   private worker: Worker | null = null;
-  private blobUrl: string | null = null;
+  private candidates: string[];
+  private candidateIdx = 0;
+
   private ready = false;
   private failed = false;
   private gotUciok = false;
-  private logged = 0;
-  private triedDirect = false;
+
+  multiThreaded = false;
+  threads = 1;
 
   private initTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
@@ -49,9 +78,13 @@ export class Engine {
 
   private queue: Job[] = [];
   private current: Job | null = null;
-  private partial: EngineLine = blankLine();
+  private lines = new Map<number, PvLine>();
+  private curDepth = 0;
 
   constructor() {
+    this.candidates = isolated()
+      ? [ASSET.mt, ASSET.single, ASSET.asm]
+      : [ASSET.single, ASSET.asm];
     this.whenReady = new Promise((res, rej) => {
       this.readyResolve = res;
       this.readyReject = rej;
@@ -59,44 +92,32 @@ export class Engine {
     this.boot();
   }
 
-  private boot(forceDirect = false) {
-    let worker: Worker | null = null;
-    const absolute = new URL(ENGINE_PATH, window.location.href).href;
+  private boot() {
+    if (this.failed) return;
+    if (this.candidateIdx >= this.candidates.length) {
+      this.fail("no engine candidate could start");
+      return;
+    }
+    const url = this.candidates[this.candidateIdx];
+    this.multiThreaded = url === ASSET.mt;
+    this.gotUciok = false;
 
-    // 1) preferred: blob worker that importScripts the engine
-    if (!forceDirect) {
-      try {
-        const blob = new Blob([`importScripts(${JSON.stringify(absolute)});`], {
-          type: "application/javascript",
-        });
-        this.blobUrl = URL.createObjectURL(blob);
-        worker = new Worker(this.blobUrl);
-        console.info("[engine] booting via blob worker →", absolute);
-      } catch (e) {
-        console.warn("[engine] blob worker failed, trying direct worker", e);
-      }
+    try {
+      const w = new Worker(new URL(url, window.location.href).href);
+      this.worker = w;
+      w.onmessage = (e: MessageEvent) => this.onMessage(readLine(e.data));
+      w.onerror = (e: ErrorEvent) => {
+        console.error("[engine] worker error:", e.message || e);
+        this.nextCandidate("worker error");
+      };
+      console.info(
+        `[engine] booting ${url} (${this.multiThreaded ? "multi" : "single"}-threaded)`,
+      );
+    } catch (e) {
+      this.nextCandidate(e);
+      return;
     }
 
-    // 2) fallback: direct worker on the engine file
-    if (!worker) {
-      this.triedDirect = true;
-      try {
-        worker = new Worker(absolute);
-        console.info("[engine] booting via direct worker →", absolute);
-      } catch (e) {
-        this.fail(e);
-        return;
-      }
-    }
-
-    this.worker = worker;
-    worker.onmessage = (e: MessageEvent) => this.onMessage(readLine(e.data));
-    worker.onerror = (e: ErrorEvent) => {
-      console.error("[engine] worker error:", e.message || e);
-      this.retryOrFail(e.message || "worker error");
-    };
-
-    // ping until the engine acknowledges
     let pings = 0;
     this.post("uci");
     this.pingTimer = setInterval(() => {
@@ -104,44 +125,28 @@ export class Engine {
         this.clearPing();
         return;
       }
-      if (pings++ > 30) return;
+      if (pings++ > 40) return;
       this.post("uci");
     }, 400);
 
     this.initTimer = setTimeout(() => {
-      if (!this.ready) this.retryOrFail("init timeout (no uciok/readyok)");
+      if (!this.ready) this.nextCandidate("init timeout");
     }, INIT_TIMEOUT);
   }
 
-  /** On first failure, retry once with a plain direct worker before giving up. */
-  private retryOrFail(reason: unknown) {
+  private nextCandidate(reason: unknown) {
     if (this.ready || this.failed) return;
-    if (!this.triedDirect) {
-      console.warn("[engine] retrying with direct worker after:", reason);
-      this.clearPing();
-      if (this.initTimer) clearTimeout(this.initTimer);
-      this.gotUciok = false;
-      this.logged = 0;
-      try {
-        this.worker?.terminate();
-      } catch {
-        /* ignore */
-      }
-      if (this.blobUrl) {
-        URL.revokeObjectURL(this.blobUrl);
-        this.blobUrl = null;
-      }
-      this.boot(true);
-      return;
+    console.warn("[engine] candidate failed:", reason, "→ trying next");
+    this.clearPing();
+    if (this.initTimer) clearTimeout(this.initTimer);
+    try {
+      this.worker?.terminate();
+    } catch {
+      /* ignore */
     }
-    this.fail(reason);
-  }
-
-  private clearPing() {
-    if (this.pingTimer) {
-      clearInterval(this.pingTimer);
-      this.pingTimer = null;
-    }
+    this.worker = null;
+    this.candidateIdx += 1;
+    this.boot();
   }
 
   private fail(reason: unknown) {
@@ -151,10 +156,12 @@ export class Engine {
     if (this.initTimer) clearTimeout(this.initTimer);
     console.warn("[engine] unavailable:", reason);
     this.readyReject(reason);
-    try {
-      this.worker?.terminate();
-    } catch {
-      /* ignore */
+  }
+
+  private clearPing() {
+    if (this.pingTimer) {
+      clearInterval(this.pingTimer);
+      this.pingTimer = null;
     }
   }
 
@@ -164,19 +171,28 @@ export class Engine {
 
   private onMessage(line: string) {
     if (!line) return;
-    if (this.logged < 6) {
-      console.debug("[engine]", line);
-      this.logged++;
-    }
 
     if (!this.gotUciok && line.includes("uciok")) {
       this.gotUciok = true;
       this.clearPing();
-      console.info("[engine] uciok ✓");
-      this.post("setoption name Hash value 16");
+      if (this.multiThreaded) {
+        this.threads = Math.max(
+          1,
+          Math.min((navigator.hardwareConcurrency || 4) - 1, 8),
+        );
+        this.post(`setoption name Threads value ${this.threads}`);
+        this.post("setoption name Hash value 64");
+      } else {
+        this.post("setoption name Hash value 32");
+      }
+      this.post(`setoption name MultiPV value ${MULTIPV}`);
       this.post("isready");
+      console.info(
+        `[engine] uciok ✓ (${this.multiThreaded ? `${this.threads} threads` : "1 thread"})`,
+      );
       return;
     }
+
     if (line.includes("readyok") && !this.ready) {
       this.ready = true;
       if (this.initTimer) clearTimeout(this.initTimer);
@@ -186,42 +202,73 @@ export class Engine {
       return;
     }
 
-    if (line.startsWith("info") && line.includes(" score ")) {
-      this.partial = parseInfo(line, this.partial);
+    if (line.startsWith("info") && line.includes(" multipv ") && line.includes(" score ")) {
+      this.parseInfo(line);
       return;
     }
 
     if (line.startsWith("bestmove")) {
       const best = line.split(/\s+/)[1];
-      this.partial.bestMove = best && best !== "(none)" ? best : null;
-      this.finish();
+      this.finish(best && best !== "(none)" ? best : null);
     }
   }
 
-  private finish() {
+  private parseInfo(line: string) {
+    const d = /\bdepth (\d+)/.exec(line);
+    const depth = d ? Number(d[1]) : 0;
+    // a fresh, deeper iteration supersedes shallower PV lines
+    if (depth > this.curDepth) {
+      this.curDepth = depth;
+    }
+    const mpv = /\bmultipv (\d+)/.exec(line);
+    const idx = mpv ? Number(mpv[1]) : 1;
+
+    let scoreCp: number | null = null;
+    let mate: number | null = null;
+    const sc = /score (cp|mate) (-?\d+)/.exec(line);
+    if (sc) {
+      if (sc[1] === "cp") scoreCp = Number(sc[2]);
+      else mate = Number(sc[2]);
+    }
+    const pvMatch = / pv (.+)$/.exec(line);
+    const pv = pvMatch ? pvMatch[1].trim().split(/\s+/) : [];
+
+    this.lines.set(idx, { scoreCp, mate, move: pv[0] ?? null, pv });
+  }
+
+  private finish(bestMove: string | null) {
     if (this.searchTimer) clearTimeout(this.searchTimer);
     this.searchTimer = null;
     const job = this.current;
     this.current = null;
-    if (job) job.resolve(this.partial);
+    if (job) {
+      const lines: PvLine[] = [];
+      const l1 = this.lines.get(1);
+      const l2 = this.lines.get(2);
+      if (l1) lines.push(l1);
+      if (l2) lines.push(l2);
+      job.resolve({ depth: this.curDepth, lines, bestMove });
+    }
     this.pump();
   }
 
   private pump() {
     if (!this.ready || this.current || this.queue.length === 0) return;
     this.current = this.queue.shift()!;
-    this.partial = blankLine();
+    this.lines.clear();
+    this.curDepth = 0;
+    const { depth, movetime } = this.current.opts;
     this.post(`position fen ${this.current.fen}`);
-    this.post(`go depth ${this.current.depth}`);
+    this.post(movetime ? `go movetime ${movetime}` : `go depth ${depth ?? 14}`);
     this.searchTimer = setTimeout(() => {
       this.post("stop");
-      this.finish();
+      this.finish(this.lines.get(1)?.move ?? null);
     }, SEARCH_TIMEOUT);
   }
 
-  analyze(fen: string, depth: number): Promise<EngineLine> {
+  analyze(fen: string, opts: AnalyzeOpts): Promise<EngineEval> {
     return new Promise((resolve) => {
-      this.queue.push({ fen, depth, resolve });
+      this.queue.push({ fen, opts, resolve });
       this.pump();
     });
   }
@@ -239,34 +286,8 @@ export class Engine {
     } catch {
       /* ignore */
     }
-    if (this.blobUrl) URL.revokeObjectURL(this.blobUrl);
     this.worker = null;
   }
-}
-
-function blankLine(): EngineLine {
-  return { depth: 0, scoreCp: null, mate: null, bestMove: null, pv: [] };
-}
-
-function parseInfo(line: string, prev: EngineLine): EngineLine {
-  const next: EngineLine = { ...prev };
-  const depth = /\bdepth (\d+)/.exec(line);
-  if (depth) next.depth = Number(depth[1]);
-
-  const score = /score (cp|mate) (-?\d+)/.exec(line);
-  if (score) {
-    if (score[1] === "cp") {
-      next.scoreCp = Number(score[2]);
-      next.mate = null;
-    } else {
-      next.mate = Number(score[2]);
-      next.scoreCp = null;
-    }
-  }
-
-  const pv = / pv (.+)$/.exec(line);
-  if (pv) next.pv = pv[1].trim().split(/\s+/);
-  return next;
 }
 
 function readLine(data: unknown): string {

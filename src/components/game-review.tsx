@@ -1,33 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
 import { MoveList } from "./move-list";
+import { CoachCard } from "./coach-card";
 import { Engine } from "@/lib/engine";
+import { coachReview, detectMotifs } from "@/lib/coach";
 import {
   CLASS_META,
   classifyMove,
-  lineToCpStm,
+  cpStm,
+  material,
   summarize,
-  winPercent,
   type Classification,
   type MoveReview,
 } from "@/lib/chess-review";
 
-const DEPTH = 12;
-
 type EngineState = "loading" | "running" | "done" | "unavailable";
+
+interface EngineInfo {
+  multiThreaded: boolean;
+  threads: number;
+}
 
 interface Props {
   pgn: string;
   whiteName: string;
   blackName: string;
   playerColor: "white" | "black";
+  result: string | null;
 }
 
-export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
+export function GameReview({
+  pgn,
+  whiteName,
+  blackName,
+  playerColor,
+  result,
+}: Props) {
   const parsed = useMemo(() => parsePgn(pgn), [pgn]);
   const [moves, setMoves] = useState<MoveReview[]>(parsed.moves);
   const [startEval, setStartEval] = useState<number | null>(null);
@@ -35,9 +47,12 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
   const [orientation, setOrientation] = useState<"white" | "black">(playerColor);
   const [showArrows, setShowArrows] = useState(true);
   const [engineState, setEngineState] = useState<EngineState>("loading");
+  const [engineInfo, setEngineInfo] = useState<EngineInfo | null>(null);
+  const [depthSeen, setDepthSeen] = useState(0);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
 
   const N = parsed.moves.length;
+  const myColor = playerColor === "white" ? "w" : "b";
 
   /* ------------------------- engine analysis ------------------------ */
   useEffect(() => {
@@ -48,12 +63,19 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
     let cancelled = false;
     const engine = new Engine();
     const working = parsed.moves.map((m) => ({ ...m }));
-    const cpStm: number[] = [];
-    const bestUci: (string | null)[] = [];
+    const posStm: number[] = [];
+    const posSecond: (number | null)[] = [];
+    const posBest: (string | null)[] = [];
+    const posPv: string[][] = [];
 
     engine.whenReady
       .then(async () => {
         if (cancelled) return;
+        const movetime = engine.multiThreaded ? 300 : 600;
+        setEngineInfo({
+          multiThreaded: engine.multiThreaded,
+          threads: engine.threads,
+        });
         setEngineState("running");
         const total = N + 1;
         setProgress({ done: 0, total });
@@ -64,47 +86,107 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
           const whiteToMove = fen.split(" ")[1] === "w";
 
           const probe = new Chess(fen);
-          let stm: number;
+          let stm = 0;
+          let second: number | null = null;
           let best: string | null = null;
+          let pv: string[] = [];
           if (probe.isCheckmate()) {
-            stm = -100000; // side to move is mated
+            stm = -100000;
           } else if (probe.isStalemate() || probe.isDraw()) {
             stm = 0;
           } else {
-            const line = await engine.analyze(fen, DEPTH);
+            const ev = await engine.analyze(fen, { movetime });
             if (cancelled) return;
-            stm = lineToCpStm(line);
-            best = line.bestMove;
+            stm = cpStm(ev.lines[0]);
+            second = ev.lines[1] ? cpStm(ev.lines[1]) : null;
+            best = ev.bestMove ?? ev.lines[0]?.move ?? null;
+            pv = ev.lines[0]?.pv ?? [];
+            if (ev.depth) setDepthSeen(ev.depth);
           }
-          cpStm[k] = stm;
-          bestUci[k] = best;
+          posStm[k] = stm;
+          posSecond[k] = second;
+          posBest[k] = best;
+          posPv[k] = pv;
 
-          const cpWhite = whiteToMove ? stm : -stm;
+          const whiteCp = whiteToMove ? stm : -stm;
           if (k === 0) {
-            setStartEval(cpWhite);
+            setStartEval(whiteCp);
           } else {
             const mv = working[k - 1];
-            mv.evalWhiteCp = cpWhite;
+            mv.evalWhiteCp = whiteCp;
 
-            // classify the move that produced this position
-            const beforeStm = cpStm[k - 1];
-            const winBefore = winPercent(beforeStm);
-            const winAfter = winPercent(-stm);
-            const bUci = bestUci[k - 1];
+            const bUci = posBest[k - 1];
             const probeBefore = new Chess(mv.fenBefore);
             const legalCount = probeBefore.moves().length;
-            const { classification, winDrop, accuracy } = classifyMove({
+
+            const matBefore = material(mv.fenBefore, mv.color);
+            const oppReply = posBest[k];
+            let matAfter = material(mv.fenAfter, mv.color);
+            if (oppReply) {
+              try {
+                const c = new Chess(mv.fenAfter);
+                c.move({
+                  from: oppReply.slice(0, 2),
+                  to: oppReply.slice(2, 4),
+                  promotion: oppReply.length > 4 ? oppReply[4] : undefined,
+                });
+                matAfter = material(c.fen(), mv.color);
+              } catch {
+                /* keep */
+              }
+            }
+            const sacrifice = matBefore - matAfter;
+
+            const res = classifyMove({
+              ply: mv.ply,
               playedUci: mv.uci,
               bestUci: bUci,
-              winBefore,
-              winAfter,
+              bestCpStm: posStm[k - 1],
+              secondCpStm: posSecond[k - 1],
+              moverAfterCp: -stm,
               legalCount,
+              sacrifice,
             });
+
+            // motifs for coach commentary
+            const playedMotifs = detectMotifs(mv.fenBefore, mv.uci);
+            const bestMotifs = bUci ? detectMotifs(mv.fenBefore, bUci) : null;
+            const replyMotifs = oppReply
+              ? detectMotifs(mv.fenAfter, oppReply)
+              : null;
+
+            // upgrade to "miss" when a clear tactic was on offer
+            let cls: Classification = res.classification;
+            if (
+              (cls === "mistake" || cls === "inaccuracy") &&
+              bestMotifs &&
+              (bestMotifs.fork ||
+                bestMotifs.sacrifice ||
+                (bestMotifs.capture && bestMotifs.capturedValue >= 2) ||
+                (!!bestMotifs.threatPiece && res.winDrop >= 6))
+            ) {
+              cls = "miss";
+            }
+
+            const coach = coachReview({
+              ply: mv.ply,
+              san: mv.san,
+              classification: cls,
+              isPlayer: mv.color === myColor,
+              bestSan: bUci ? uciToSan(mv.fenBefore, bUci) : null,
+              played: playedMotifs,
+              best: bestMotifs,
+              reply: replyMotifs,
+            });
+
             mv.bestUci = bUci;
             mv.bestSan = bUci ? uciToSan(mv.fenBefore, bUci) : null;
-            mv.classification = classification;
-            mv.winDrop = winDrop;
-            mv.accuracy = accuracy;
+            mv.bestLineSan = pvToSan(mv.fenBefore, posPv[k - 1], 6);
+            mv.classification = cls;
+            mv.winDrop = res.winDrop;
+            mv.accuracy = res.accuracy;
+            mv.coachTitle = coach.title;
+            mv.coachMessage = coach.message;
             mv.analyzed = true;
             setMoves(working.map((m) => ({ ...m })));
           }
@@ -120,13 +202,10 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
       cancelled = true;
       engine.destroy();
     };
-  }, [parsed, N]);
+  }, [parsed, N, myColor]);
 
   /* --------------------------- navigation --------------------------- */
-  const go = useCallback(
-    (p: number) => setPly(Math.max(0, Math.min(N, p))),
-    [N],
-  );
+  const go = useCallback((p: number) => setPly(Math.max(0, Math.min(N, p))), [N]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -154,14 +233,53 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
   const evalWhite = ply === 0 ? startEval : moves[ply - 1].evalWhiteCp;
 
   const playedMove = ply >= 1 ? moves[ply - 1] : null;
-  const forwardBest = moves[ply]?.bestUci ?? null;
-  const forwardBestSan = moves[ply]?.bestSan ?? null;
+  const forwardMove = moves[ply] ?? null;
+  const forwardBest = forwardMove?.bestUci ?? null;
   const arrow =
     showArrows && forwardBest
       ? { from: forwardBest.slice(0, 2), to: forwardBest.slice(2, 4) }
       : null;
 
+  const badge =
+    playedMove?.analyzed && playedMove.classification
+      ? {
+          square: playedMove.uci.slice(2, 4),
+          classification: playedMove.classification,
+        }
+      : null;
+
   const summary = useMemo(() => summarize(moves), [moves]);
+
+  // coach card content
+  const isMateEnd = !!playedMove?.san.includes("#");
+  const evalBadge =
+    ply === 0
+      ? startEval != null
+        ? formatEvalShort(startEval)
+        : null
+      : isMateEnd
+        ? (result ?? formatEvalShort(evalWhite ?? 0))
+        : evalWhite != null
+          ? formatEvalShort(evalWhite)
+          : null;
+
+  const thinking =
+    ply >= 1 && !playedMove?.analyzed && engineState !== "unavailable";
+  const coachTitle =
+    ply === 0
+      ? "Game Review"
+      : (playedMove?.coachTitle ?? `${playedMove?.san}`);
+  const coachMessage =
+    ply === 0
+      ? "Step through the game and I'll break down every move — the good, the bad, and the brilliant."
+      : (playedMove?.coachMessage ?? "");
+
+  const showBest =
+    !!playedMove?.analyzed &&
+    !!playedMove.bestSan &&
+    playedMove.bestUci !== playedMove.uci &&
+    !!playedMove.classification &&
+    !["forced", "book"].includes(playedMove.classification);
 
   if (parsed.error) {
     return (
@@ -173,7 +291,7 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       {/* board column */}
       <div>
         <PlayerTag
@@ -196,6 +314,7 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
               lastMove={lastMove}
               arrow={arrow}
               checkSquare={checkSquare}
+              badge={badge}
             />
           </div>
         </div>
@@ -224,14 +343,37 @@ export function GameReview({ pgn, whiteName, blackName, playerColor }: Props) {
 
       {/* side column */}
       <div className="space-y-4">
-        <EngineStatus state={engineState} progress={progress} />
+        <CoachCard
+          title={coachTitle}
+          message={coachMessage}
+          classification={ply === 0 ? null : (playedMove?.classification ?? null)}
+          evalBadge={evalBadge}
+          thinking={thinking}
+        />
 
-        <AnalysisPanel
-          ply={ply}
-          playedMove={playedMove}
-          evalWhite={evalWhite}
-          forwardBestSan={forwardBestSan}
-          engineState={engineState}
+        {showBest && playedMove && (
+          <div className="panel rounded-xl p-3">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-faint">
+                best
+              </span>
+              <span className="font-mono font-semibold text-accent">
+                {playedMove.bestSan}
+              </span>
+              {playedMove.bestLineSan.length > 1 && (
+                <span className="truncate font-mono text-xs text-muted">
+                  {playedMove.bestLineSan.slice(1).join(" ")}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <EngineStatus
+          state={engineState}
+          info={engineInfo}
+          depth={depthSeen}
+          progress={progress}
         />
 
         <div className="panel rounded-2xl p-3">
@@ -313,14 +455,14 @@ function Controls({
       <div className="flex items-center gap-1">
         <button
           onClick={onToggleArrows}
-          title="Toggle engine arrow"
+          title="Toggle best-move arrow"
           className={`rounded-lg border px-2.5 py-1.5 font-mono text-xs transition ${
             showArrows
               ? "border-accent/40 bg-accent/10 text-accent"
               : "border-line bg-panel text-muted hover:text-fg"
           }`}
         >
-          ➤ hint
+          ➤ best
         </button>
         <button
           onClick={onFlip}
@@ -356,19 +498,32 @@ function NavBtn({
 
 function EngineStatus({
   state,
+  info,
+  depth,
   progress,
 }: {
   state: EngineState;
+  info: EngineInfo | null;
+  depth: number;
   progress: { done: number; total: number };
 }) {
   const pct =
     progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
+  const threadLabel = info
+    ? info.multiThreaded
+      ? `${info.threads} threads`
+      : "single-threaded"
+    : "";
+  const label =
+    "Stockfish 18" +
+    (threadLabel ? ` · ${threadLabel}` : "") +
+    (depth ? ` · depth ${depth}` : "");
   return (
     <div className="panel rounded-2xl p-4">
-      <div className="flex items-center justify-between">
-        <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted">
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex min-w-0 items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted">
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
               state === "unavailable"
                 ? "bg-rose"
                 : state === "done"
@@ -376,9 +531,9 @@ function EngineStatus({
                   : "bg-amber animate-pulse-dot"
             }`}
           />
-          Stockfish · depth {DEPTH}
+          <span className="truncate">{label}</span>
         </span>
-        <span className="font-mono text-xs text-faint">
+        <span className="shrink-0 font-mono text-xs text-faint">
           {state === "loading" && "loading…"}
           {state === "running" && `${progress.done}/${progress.total}`}
           {state === "done" && "complete"}
@@ -403,101 +558,6 @@ function EngineStatus({
   );
 }
 
-function AnalysisPanel({
-  ply,
-  playedMove,
-  evalWhite,
-  forwardBestSan,
-  engineState,
-}: {
-  ply: number;
-  playedMove: MoveReview | null;
-  evalWhite: number | null;
-  forwardBestSan: string | null;
-  engineState: EngineState;
-}) {
-  const meta: Classification | null = playedMove?.classification ?? null;
-  const cm = meta ? CLASS_META[meta] : null;
-  const showBetter =
-    playedMove &&
-    playedMove.bestSan &&
-    meta &&
-    !["best", "excellent", "forced", "book"].includes(meta);
-
-  return (
-    <div className="panel rounded-2xl p-5">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-          // review
-        </span>
-        <span className="font-mono text-sm tabular-nums text-muted">
-          {evalWhite != null ? formatEvalShort(evalWhite) : "—"}
-        </span>
-      </div>
-
-      {ply === 0 ? (
-        <div className="mt-3">
-          <p className="text-sm text-muted">
-            Starting position. Step forward to review each move.
-          </p>
-          {forwardBestSan && (
-            <p className="mt-2 text-sm text-fg">
-              Engine suggests{" "}
-              <span className="font-mono font-semibold text-accent">
-                {forwardBestSan}
-              </span>
-              .
-            </p>
-          )}
-        </div>
-      ) : playedMove ? (
-        <div className="mt-3 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-semibold text-fg">
-              {playedMove.moveNo}
-              {playedMove.color === "w" ? "." : "…"} {playedMove.san}
-            </span>
-            {cm ? (
-              <span
-                className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-semibold ${cm.chip} ${cm.text}`}
-              >
-                <span>{cm.symbol}</span>
-                {cm.label}
-              </span>
-            ) : engineState !== "unavailable" ? (
-              <span className="font-mono text-xs text-faint">analyzing…</span>
-            ) : null}
-          </div>
-
-          {cm && <p className="text-sm leading-relaxed text-muted">{cm.blurb}</p>}
-
-          {showBetter && (
-            <div className="rounded-lg border border-line bg-panel-2 p-3 text-sm">
-              <span className="text-muted">Best was </span>
-              <span className="font-mono font-semibold text-accent">
-                {playedMove.bestSan}
-              </span>
-              {playedMove.winDrop != null && playedMove.winDrop >= 1 && (
-                <span className="text-faint">
-                  {" "}
-                  · −{playedMove.winDrop.toFixed(0)}% win chance
-                </span>
-              )}
-            </div>
-          )}
-
-          {forwardBestSan && (
-            <p className="text-xs text-faint">
-              Engine&apos;s move here:{" "}
-              <span className="font-mono text-muted">{forwardBestSan}</span>
-            </p>
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function AccuracySummary({
   whiteName,
   blackName,
@@ -514,6 +574,18 @@ function AccuracySummary({
     </div>
   );
 }
+
+const SUMMARY_ROWS: { label: string; cls: Classification; optional?: boolean }[] =
+  [
+    { label: "Brilliant", cls: "brilliant", optional: true },
+    { label: "Great", cls: "great", optional: true },
+    { label: "Best", cls: "best" },
+    { label: "Book", cls: "book", optional: true },
+    { label: "Inaccuracies", cls: "inaccuracy" },
+    { label: "Misses", cls: "miss", optional: true },
+    { label: "Mistakes", cls: "mistake" },
+    { label: "Blunders", cls: "blunder" },
+  ];
 
 function SideCard({
   name,
@@ -539,10 +611,16 @@ function SideCard({
         <span className="ml-1 text-sm font-normal text-faint">% acc</span>
       </div>
       <div className="mt-3 space-y-1 text-xs">
-        <CountRow label="Best" n={side.counts.best} cls="best" />
-        <CountRow label="Inaccuracies" n={side.counts.inaccuracy} cls="inaccuracy" />
-        <CountRow label="Mistakes" n={side.counts.mistake} cls="mistake" />
-        <CountRow label="Blunders" n={side.counts.blunder} cls="blunder" />
+        {SUMMARY_ROWS.filter((r) => !r.optional || side.counts[r.cls] > 0).map(
+          (r) => (
+            <CountRow
+              key={r.cls}
+              label={r.label}
+              n={side.counts[r.cls]}
+              cls={r.cls}
+            />
+          ),
+        )}
       </div>
     </div>
   );
@@ -582,10 +660,7 @@ function parsePgn(pgn: string): ParsedPgn {
     const chess = new Chess();
     chess.loadPgn(pgn);
     const history = chess.history({ verbose: true });
-    const startFen =
-      history.length > 0
-        ? history[0].before
-        : new Chess().fen();
+    const startFen = history.length > 0 ? history[0].before : new Chess().fen();
 
     const moves: MoveReview[] = history.map((h, i) => ({
       ply: i + 1,
@@ -598,9 +673,12 @@ function parsePgn(pgn: string): ParsedPgn {
       evalWhiteCp: null,
       bestUci: null,
       bestSan: null,
+      bestLineSan: [],
       classification: null,
       winDrop: null,
       accuracy: null,
+      coachTitle: null,
+      coachMessage: null,
       analyzed: false,
     }));
 
@@ -622,6 +700,26 @@ function uciToSan(fen: string, uci: string): string | null {
   } catch {
     return null;
   }
+}
+
+function pvToSan(fen: string, pv: string[], max: number): string[] {
+  const out: string[] = [];
+  try {
+    const c = new Chess(fen);
+    for (let i = 0; i < Math.min(pv.length, max); i++) {
+      const u = pv[i];
+      const mv = c.move({
+        from: u.slice(0, 2),
+        to: u.slice(2, 4),
+        promotion: u.length > 4 ? u[4] : undefined,
+      });
+      if (!mv) break;
+      out.push(mv.san);
+    }
+  } catch {
+    /* ignore */
+  }
+  return out;
 }
 
 function checkSquareOf(fen: string): string | null {

@@ -13,16 +13,21 @@ A modern **Next.js** dashboard for the [Chess.com public API](https://www.chess.
 - **Recent games** — your latest games with result badges, opponents, time controls and direct links back to Chess.com, filterable by result and format.
 - **Game Review** — click any game to open a full Stockfish-style review: step through every move on an interactive board, see an evaluation bar, engine best-move arrows, and each move graded **Best / Excellent / Good / Inaccuracy / Mistake / Blunder** with a plain-English explanation, plus per-player **accuracy %**.
 
-## Game Review (Stockfish in your browser)
+## Game Review (Stockfish 18 in your browser)
 
-Open any standard game from the dashboard (or visit `/player/<name>/game/<uuid>`). ChessBuddy parses the PGN with `chess.js` and runs a **self-hosted single-threaded Stockfish WASM engine** in a Web Worker — analysis happens entirely on your machine, no backend or API key. As it analyzes:
+Open any standard game from the dashboard (or visit `/player/<name>/game/<uuid>`). ChessBuddy parses the PGN with `chess.js` and runs **Stockfish 18 (NNUE)** in a Web Worker — analysis happens entirely on your machine, no backend or API key:
 
-- an **eval bar** + numeric score track who's winning at each position,
-- every move is **classified** by the win-probability swing it caused,
-- the **best move** is drawn as an arrow and named in the review panel,
-- per-side **accuracy** is computed from a Lichess/chess.com-style formula.
+- **Multi-threaded** build (`stockfish-18-lite.js`) when the page is cross-origin isolated (COOP/COEP headers in [next.config.ts](next.config.ts) enable `SharedArrayBuffer`), using up to N-1 CPU threads,
+- **single-threaded** build (`stockfish-18-lite-single.js`) as an automatic fallback for browsers without isolation (e.g. Safari),
+- a 2019 asm.js build as a final safety net.
 
-Navigate with the on-screen controls or the keyboard (`←/→` step, `Home/End` jump, `f` flip board). If the engine can't load in a given browser, the page degrades gracefully to a move-by-move replay.
+It analyzes every position (MultiPV 2, ~0.3s/move) and produces a **chess.com-style review**:
+
+- a friendly **coach card** that explains each move in plain English ("That develops a piece and prepares kingside castling…", "A missed opportunity — their stronger move was to win a tempo by threatening the bishop"),
+- each move **classified** — Brilliant `!!`, Great `!`, Best `★`, Excellent/Good, Book, Inaccuracy `?!`, Miss `✗`, Mistake `?`, Blunder `??` — with a colored **badge on the board square**,
+- an **eval bar** + score, a **best-move arrow**, the engine's **best line**, and per-side **accuracy %**.
+
+Move classification is derived from the win-probability swing each move causes, with Brilliant/Great detected via the gap to the 2nd-best move (MultiPV) and material sacrifices, and the coach's commentary built from motif detection (captures, checks, castling, central control, development, threats, forks). Navigate with the on-screen controls or the keyboard (`←/→` step, `Home/End` jump, `f` flip board).
 
 ## Why "username" and not OAuth?
 
@@ -33,7 +38,7 @@ Chess.com's OAuth program is **invite-only** and not available to general apps. 
 - **Next.js 16** (App Router, Server Components, Route Handlers)
 - **React 19** + **TypeScript**
 - **Tailwind CSS v4** with a custom dark "engine/terminal" theme
-- **chess.js** for PGN parsing + legality; **Stockfish (WASM)** in a Web Worker for analysis
+- **chess.js** for PGN parsing + legality; **Stockfish 18 NNUE (WASM)** in a Web Worker for analysis (multi-threaded when isolated, single-threaded fallback)
 - Zero external chart/board libraries — the rating chart, eval bar and board are hand-built responsive SVG.
 
 ## Running locally
@@ -62,9 +67,10 @@ src/
   lib/
     chesscom.ts                           # typed Chess.com API client + caching
     format.ts                             # dates, results, flags, view helpers
-    engine.ts                             # Stockfish UCI Web Worker driver
+    engine.ts                             # Stockfish 18 UCI Web Worker driver (MT/ST)
     chess-review.ts                       # win%, move classification, accuracy
-public/engine/                            # self-hosted Stockfish WASM build
+    coach.ts                              # motif detection + plain-English commentary
+public/engine/                            # self-hosted Stockfish 18 NNUE WASM builds
 ```
 
 All Chess.com calls run **server-side** (no CORS, no exposed keys) and use Next's fetch cache (`revalidate`), so repeat visits are fast and gentle on the API.
