@@ -40,6 +40,11 @@ export const SAMPLE_OPENINGS: OpeningSummary[] = [
     winRateWhite: 51,
     drawRate: 28,
     trending: true,
+    variations: [
+      { name: "English Attack", moves: "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3" },
+      { name: "Classical Variation", moves: "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be2" },
+      { name: "Fischer-Sozin Attack", moves: "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Bc4" },
+    ],
   },
   {
     id: "sicilian-dragon",
