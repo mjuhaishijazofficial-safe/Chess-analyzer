@@ -15,6 +15,7 @@ export interface OpeningSummary {
   winRateWhite: number;      // 0-100
   drawRate: number;          // 0-100
   trending?: boolean;
+  variations?: { name: string; moves: string }[];
 }
 
 export interface SearchMatch extends OpeningSummary {
