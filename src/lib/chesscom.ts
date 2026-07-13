@@ -195,6 +195,29 @@ export async function findGameByUuid(
   return null;
 }
 
+/* ------------------------------ Leaderboard ------------------------------ */
+
+interface LeaderboardEntry {
+  player_id: number;
+  "@id": string;
+  url: string;
+  username: string;
+  avatar?: string;
+  score: number;
+  rank: number;
+}
+
+interface LeaderboardsResponse {
+  live_blitz?: LeaderboardEntry[];
+}
+
+/** The player currently ranked #1 on Chess.com's live blitz leaderboard. */
+export async function getTopPlayer(): Promise<{ username: string } | null> {
+  const data = await get<LeaderboardsResponse>("/leaderboards", 3600);
+  const top = data?.live_blitz?.[0];
+  return top ? { username: top.username } : null;
+}
+
 /* --------------------- Convenience aggregate ---------------------- */
 
 export interface PlayerBundle {

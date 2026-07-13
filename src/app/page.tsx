@@ -1,13 +1,7 @@
-import Link from "next/link";
-import { LoginForm } from "@/components/login-form";
 
-const DEMO_PLAYERS = [
-  "magnuscarlsen",
-  "hikaru",
-  "gothamchess",
-  "fabianocaruana",
-  "anishgiri",
-];
+import { Suspense } from "react";
+import { LoginForm } from "@/components/login-form";
+import { getProfile, getStats } from "@/lib/chesscom";
 
 export default function HomePage() {
   return (
@@ -27,6 +21,8 @@ export default function HomePage() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
           {/* left */}
           <div className="animate-rise">
+            
+            
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/[0.06] px-3 py-1 font-mono text-xs text-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
               ONLINE · CONNECTED TO CHESS.COM
@@ -47,26 +43,13 @@ export default function HomePage() {
             <div className="mt-8">
               <LoginForm />
             </div>
-
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="font-mono text-xs uppercase tracking-wider text-faint">
-                jump in
-              </span>
-              {DEMO_PLAYERS.map((p) => (
-                <Link
-                  key={p}
-                  href={`/player/${p}`}
-                  className="rounded-full border border-line bg-panel px-3 py-1 text-xs text-muted transition hover:border-accent/50 hover:text-accent"
-                >
-                  @{p}
-                </Link>
-              ))}
-            </div>
           </div>
 
           {/* right — HUD player card */}
           <div className="animate-rise [animation-delay:120ms]">
-            <PlayerHud />
+            <Suspense fallback={<PlayerHudSkeleton />}>
+              <PlayerHud />
+            </Suspense>
           </div>
         </div>
 
@@ -205,8 +188,29 @@ function FloatingPieces() {
   );
 }
 
-/* ---- gamer HUD player card (decorative preview of the dashboard) ---- */
-function PlayerHud() {
+
+/** Fetches only profile + stats (no game history) — kept light so this card streams in fast. */
+async function fetchPlayerRatings(username: string) {
+  const [profile, stats] = await Promise.all([
+    getProfile(username).catch(() => null),
+    getStats(username).catch(() => null),
+  ]);
+  if (!profile) return null;
+  return {
+    username: profile.username,
+    title: profile.title,
+    bullet: stats?.chess_bullet?.last?.rating,
+    blitz: stats?.chess_blitz?.last?.rating,
+    rapid: stats?.chess_rapid?.last?.rating,
+  };
+}
+
+async function PlayerHud() {
+  const [magnus, hikaru] = await Promise.all([
+    fetchPlayerRatings("magnuscarlsen"),
+    fetchPlayerRatings("hikaru"),
+  ]);
+
   return (
     <div className="relative">
       {/* rotating glow */}
@@ -216,84 +220,111 @@ function PlayerHud() {
         <div className="pointer-events-none absolute inset-0 bg-dots opacity-30" />
 
         {/* header */}
-        <div className="relative flex items-center gap-4">
-          <div className="relative">
-            <div className="grid h-16 w-16 place-items-center rounded-2xl border border-accent/40 bg-panel-2 text-3xl text-accent">
-              ♞
-            </div>
-            <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-[#0b0e13] bg-accent" />
+        <div className="relative flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-accent/40 bg-panel-2 text-2xl text-accent">
+            ♞
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-amber/15 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber">
-                GM
-              </span>
-              <span className="truncate text-lg font-bold text-fg">
-                Player One
-              </span>
-            </div>
-            <div className="font-mono text-xs text-muted">
-              @your-username · 🇳🇴 online
-            </div>
-          </div>
-          <div className="ml-auto text-right">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-faint">
-              peak
-            </div>
-            <div className="text-xl font-bold tabular-nums text-accent">
-              3300
+          <div>
+            <div className="text-sm font-bold text-fg">Best of this era</div>
+            <div className="font-mono text-[11px] text-muted">
+              live ratings, straight from Chess.com
             </div>
           </div>
         </div>
 
-        {/* rating bars */}
-        <div className="relative mt-6 space-y-3">
-          <RatingBar icon="⚡" label="Bullet" value={3300} pct={96} delay={0} />
-          <RatingBar icon="🔥" label="Blitz" value={3200} pct={90} delay={120} />
-          <RatingBar icon="⏱️" label="Rapid" value={2800} pct={74} delay={240} />
-        </div>
-
-        {/* record + cta */}
-        <div className="relative mt-6 flex items-center justify-between gap-3 border-t border-line pt-4">
-          <div className="font-mono text-xs text-muted">
-            <span className="text-accent">128W</span>{" "}
-            <span className="text-faint">14D</span>{" "}
-            <span className="text-rose">22L</span>
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-accent">
-            ▸ analyze
-          </span>
+        {/* players */}
+        <div className="relative mt-6 space-y-6">
+          {magnus && <PlayerRankBlock rank={1} player={magnus} />}
+          {hikaru && <PlayerRankBlock rank={2} player={hikaru} />}
         </div>
       </div>
     </div>
   );
 }
 
-function RatingBar({
-  icon,
-  label,
-  value,
-  pct,
-  delay,
+function PlayerRankBlock({
+  rank,
+  player,
 }: {
-  icon: string;
-  label: string;
-  value: number;
-  pct: number;
-  delay: number;
+  rank: number;
+  player: {
+    username: string;
+    title?: string;
+    bullet?: number;
+    blitz?: number;
+    rapid?: number;
+  };
 }) {
   return (
     <div>
+      <div className="mb-3 flex items-center gap-2">
+        <span className="grid h-5 w-5 place-items-center rounded-full bg-accent/15 font-mono text-[10px] font-bold text-accent">
+          {rank}
+        </span>
+        {player.title && (
+          <span className="rounded-md bg-amber/15 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber">
+            {player.title}
+          </span>
+        )}
+        <span className="truncate text-sm font-bold text-fg">
+          @{player.username}
+        </span>
+      </div>
+      <div className="space-y-2.5">
+        {player.bullet != null && (
+          <RatingBar label="Bullet" value={player.bullet} delay={0} />
+        )}
+        {player.blitz != null && (
+          <RatingBar label="Blitz" value={player.blitz} delay={80} />
+        )}
+        {player.rapid != null && (
+          <RatingBar label="Rapid" value={player.rapid} delay={160} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PlayerHudSkeleton() {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-line bg-[#0b0e13]/90 p-6 backdrop-blur">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 animate-pulse rounded-2xl bg-panel-2" />
+        <div className="space-y-2">
+          <div className="h-3 w-24 animate-pulse rounded bg-panel-2" />
+          <div className="h-2.5 w-32 animate-pulse rounded bg-panel-2" />
+        </div>
+      </div>
+      <div className="mt-6 space-y-2">
+        <div className="h-2 w-full animate-pulse rounded-full bg-panel-2" />
+        <div className="h-2 w-full animate-pulse rounded-full bg-panel-2" />
+        <div className="h-2 w-full animate-pulse rounded-full bg-panel-2" />
+      </div>
+    </div>
+  );
+}
+
+function RatingBar({
+  label,
+  value,
+  delay,
+}: {
+  label: string;
+  value: number;
+  delay: number;
+}) {
+  const pct = Math.max(4, Math.min(100, Math.round((value / 3400) * 100)));
+  return (
+    <div>
       <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="inline-flex items-center gap-1.5 font-mono uppercase tracking-wider text-muted">
-          <span>{icon}</span>
+        <span className="font-mono uppercase tracking-wider text-muted">
           {label}
         </span>
         <span className="font-bold tabular-nums text-fg">{value}</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-panel-2">
+      <div className="h-1.5 overflow-hidden rounded-full bg-panel-2">
         <div
-          className="animate-bar h-full rounded-full bg-gradient-to-r from-cyan to-accent"
+          className="animate-bar h-full rounded-full bg-accent/70"
           style={{ width: `${pct}%`, animationDelay: `${delay}ms` }}
         />
       </div>

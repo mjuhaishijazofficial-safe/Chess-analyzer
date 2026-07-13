@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteSidebar } from "@/components/site-sidebar";
+import { SITE_URL } from "@/lib/site-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "Connect your Chess.com account and explore your profile, ratings, records and recent games in a clean analytics dashboard.",
-  metadataBase: new URL("https://chessbuddy.local"),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: "ChessBuddy — Chess.com analytics",
     description:
@@ -40,10 +42,13 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-fg">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+      <body className="min-h-full flex bg-bg text-fg">
+        <SiteSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </div>
       </body>
     </html>
   );

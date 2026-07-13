@@ -1,6 +1,36 @@
 import type { NextConfig } from "next";
 
 /**
+ * Content-Security-Policy.
+ *
+ * - script/style 'unsafe-inline' are needed because the app renders many
+ *   inline `style={{ ... }}` attributes (board squares, theme swatches,
+ *   dynamic gradients) and Next.js itself injects some inline scripts.
+ * - img-src allows any https: source because player avatars come back as
+ *   arbitrary URLs from the Chess.com API, and piece art is fetched from
+ *   lichess1.org's public asset CDN.
+ * - frame-ancestors 'none' stops the site from being embedded in an
+ *   iframe elsewhere (clickjacking protection) — stronger than the older
+ *   X-Frame-Options header, which we also set for older browsers.
+ */
+const isDev = process.env.NODE_ENV !== "production";
+
+const CSP = [
+  "default-src 'self'",
+  // React's dev-mode debugging features (call-stack reconstruction, Fast
+  // Refresh) need eval() — never used by React in production builds.
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+/**
  * Cross-origin isolation headers.
  *
  * Multi-threaded Stockfish (WASM + SharedArrayBuffer) only works when the page
@@ -18,6 +48,14 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+          { key: "Content-Security-Policy", value: CSP },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
         ],
       },
       {

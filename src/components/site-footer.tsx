@@ -1,4 +1,5 @@
 import { Logo } from "./logo";
+import Link from "next/link";
 
 export function SiteFooter() {
   return (
@@ -28,6 +29,12 @@ export function SiteFooter() {
           >
             Chess.com ↗
           </a>
+          <Link href="/privacy" className="transition hover:text-fg">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="transition hover:text-fg">
+            Terms of Use
+          </Link>
           <span className="text-faint">
             © {new Date().getFullYear()} ChessBuddy
           </span>

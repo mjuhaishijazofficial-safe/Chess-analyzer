@@ -1,4 +1,6 @@
 import type { PvLine } from "./engine";
+import { bookPlies } from "./opening-book";
+
 
 export type Classification =
   | "brilliant"
@@ -127,8 +129,9 @@ export function winPercent(cp: number): number {
   return Math.max(0, Math.min(100, 50 + 50 * v));
 }
 
-export function accuracyFromDrop(dropPoints: number): number {
-  const a = 103.1668 * Math.exp(-0.04354 * Math.max(0, dropPoints)) - 3.1669;
+export function accuracyFromCPL(cpl: number, k = 0.008): number {
+  const clamped = Math.max(0, cpl);
+  const a = 100 * Math.exp(-k * clamped);
   return Math.max(0, Math.min(100, a));
 }
 
@@ -163,15 +166,12 @@ export interface ClassifyInput {
   ply: number;
   playedUci: string;
   bestUci: string | null;
-  /** mover-perspective cp of the best line at the position before the move */
   bestCpStm: number;
-  /** mover-perspective cp of the 2nd-best line (null if unavailable) */
   secondCpStm: number | null;
-  /** mover-perspective cp after the move that was actually played */
   moverAfterCp: number;
   legalCount: number;
-  /** material the mover gave up over the next reply (pawns); >0 = sacrifice */
   sacrifice: number;
+  bookMatchPlies: number;
 }
 
 export interface ClassifyResult {
@@ -182,44 +182,53 @@ export interface ClassifyResult {
 }
 
 export function classifyMove(i: ClassifyInput): ClassifyResult {
-  const winBefore = winPercent(i.bestCpStm);
-  const winAfter = winPercent(i.moverAfterCp);
-  const winDrop = Math.max(0, winBefore - winAfter);
-  const accuracy = accuracyFromDrop(winDrop);
+  // Centipawn Loss: kitna eval gira best move ke muqable
+  const cpl = Math.max(0, i.bestCpStm - i.moverAfterCp);
+  const accuracy = accuracyFromCPL(cpl);
   const gapToSecond =
-    i.secondCpStm != null ? winBefore - winPercent(i.secondCpStm) : null;
+    i.secondCpStm != null ? i.bestCpStm - i.secondCpStm : null;
 
   let classification: Classification;
 
+  const isTopChoice = i.bestUci != null && i.playedUci === i.bestUci;
+
+  // Position abhi bhi safe hai? (winning ya draw jaisa, na ke haar rahe ho)
+  const positionSafe = i.moverAfterCp >= -20;
+
   if (i.legalCount <= 1) {
     classification = "forced";
-  } else if (i.ply <= BOOK_PLIES && winDrop < 1.5) {
-    // sound opening moves are treated as theory ("book"), as in chess.com
+  } else if (i.ply <= i.bookMatchPlies) {
     classification = "book";
-  } else if (i.bestUci && i.playedUci === i.bestUci) {
-    const onlyMove = gapToSecond != null && gapToSecond >= 10;
-    const stillOk = winAfter >= 50;
-    const notTrivial = winBefore <= 97;
-    if (i.sacrifice >= 2 && stillOk && notTrivial) {
+ } else if (isTopChoice) {
+  const onlyMove = gapToSecond != null && gapToSecond >= 250;
+
+    // Brilliant: bara sacrifice + position clearly winning + move surprising
+    const bigSacrifice = i.sacrifice >= 3;
+    const clearlyWinning = i.moverAfterCp >= 0;
+    const isSurprising = gapToSecond != null && gapToSecond >= 150;
+
+    if (bigSacrifice && clearlyWinning && isSurprising) {
       classification = "brilliant";
-    } else if (onlyMove && notTrivial) {
+    } else if (onlyMove) {
       classification = "great";
     } else {
       classification = "best";
     }
-  } else if (winDrop < 2) {
+  } else if (cpl <= 10) {
     classification = "excellent";
-  } else if (winDrop < 5) {
+  } else if (cpl <= 30) {
+    classification = "excellent";
+  } else if (cpl <= 70) {
     classification = "good";
-  } else if (winDrop < 10) {
+  } else if (cpl <= 150) {
     classification = "inaccuracy";
-  } else if (winDrop < 20) {
+  } else if (cpl <= 300) {
     classification = "mistake";
   } else {
     classification = "blunder";
   }
 
-  return { classification, winDrop, accuracy, gapToSecond };
+  return { classification, winDrop: cpl, accuracy, gapToSecond };
 }
 
 /* ----------------------------- Move ------------------------------- */

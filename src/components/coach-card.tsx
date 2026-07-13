@@ -22,12 +22,14 @@ export function CoachCard({
   classification,
   evalBadge,
   thinking,
+  openingName,
 }: {
   title: string;
   message: string;
   classification: Classification | null;
   evalBadge: string | null;
   thinking?: boolean;
+  openingName?: string | null;
 }) {
   const icon = classification ? ICON[classification] : null;
   return (
@@ -54,6 +56,12 @@ export function CoachCard({
               </span>
             )}
           </div>
+          {openingName && (
+            <p className="mt-1 truncate text-xs text-muted">
+              <span className="mr-1">📖</span>
+              {openingName}
+            </p>
+          )}
           <p className="mt-2 text-sm leading-relaxed text-muted">
             {thinking ? (
               <span className="inline-flex items-center gap-2 text-faint">

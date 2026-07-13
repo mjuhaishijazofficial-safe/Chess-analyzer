@@ -1,6 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { bookPlies, matchOpeningName } from "@/lib/opening-book";
+import { savePuzzle } from "@/lib/puzzle-store";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { Chess } from "chess.js";
 import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
@@ -8,6 +11,10 @@ import { MoveList } from "./move-list";
 import { CoachCard } from "./coach-card";
 import { Engine } from "@/lib/engine";
 import { coachReview, detectMotifs } from "@/lib/coach";
+import { speak, stopSpeaking, isTtsSupported } from "@/lib/tts";
+import { playSoundForSan } from "@/lib/sound";
+import { explainMove, legalTargetsFrom, toUci, type ExploreResult } from "@/lib/explore";
+import { toPng } from "html-to-image";
 import {
   CLASS_META,
   classifyMove,
@@ -31,6 +38,7 @@ interface Props {
   blackName: string;
   playerColor: "white" | "black";
   result: string | null;
+  initialPly?: number;
 }
 
 export function GameReview({
@@ -39,17 +47,127 @@ export function GameReview({
   blackName,
   playerColor,
   result,
+  initialPly = 0,
 }: Props) {
   const parsed = useMemo(() => parsePgn(pgn), [pgn]);
   const [moves, setMoves] = useState<MoveReview[]>(parsed.moves);
   const [startEval, setStartEval] = useState<number | null>(null);
-  const [ply, setPly] = useState(0);
+  const [ply, setPly] = useState(() => Math.max(0, Math.min(initialPly, parsed.moves.length)));
   const [orientation, setOrientation] = useState<"white" | "black">(playerColor);
   const [showArrows, setShowArrows] = useState(true);
   const [engineState, setEngineState] = useState<EngineState>("loading");
   const [engineInfo, setEngineInfo] = useState<EngineInfo | null>(null);
   const [depthSeen, setDepthSeen] = useState(0);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [ttsSupported, setTtsSupported] = useState(false);
+  useEffect(() => {
+    setTtsSupported(isTtsSupported());
+  }, []);
+
+  /* ------------------- "Why not X?" explore mode --------------------- */
+  const [exploreOn, setExploreOn] = useState(false);
+  const [exploreSelected, setExploreSelected] = useState<string | null>(null);
+  const [exploreTargets, setExploreTargets] = useState<string[]>([]);
+  const [exploreResult, setExploreResult] = useState<ExploreResult | null>(null);
+  const [exploreLoading, setExploreLoading] = useState(false);
+  const exploreEngineRef = useRef<Engine | null>(null);
+
+  useEffect(() => {
+    return () => {
+      exploreEngineRef.current?.destroy();
+      exploreEngineRef.current = null;
+    };
+  }, []);
+
+  const resetExploreSelection = useCallback(() => {
+    setExploreSelected(null);
+    setExploreTargets([]);
+  }, []);
+
+  const handleExploreClick = useCallback(
+    async (square: string, currentFen: string, currentPly: number) => {
+      if (!exploreSelected) {
+        const targets = legalTargetsFrom(currentFen, square);
+        if (targets.length) {
+          setExploreSelected(square);
+          setExploreTargets(targets);
+          setExploreResult(null);
+        }
+        return;
+      }
+      if (square === exploreSelected) {
+        resetExploreSelection();
+        return;
+      }
+      if (exploreTargets.includes(square)) {
+        const uci = toUci(currentFen, exploreSelected, square);
+        resetExploreSelection();
+        if (!uci) return;
+        setExploreLoading(true);
+        setExploreResult(null);
+        try {
+          if (!exploreEngineRef.current) exploreEngineRef.current = new Engine();
+          const engine = exploreEngineRef.current;
+          await engine.whenReady;
+          const result = await explainMove(engine, currentFen, uci, currentPly);
+          setExploreResult(result);
+        } catch {
+          setExploreResult(null);
+        } finally {
+          setExploreLoading(false);
+        }
+        return;
+      }
+      // clicked a different own piece — reselect
+      const targets = legalTargetsFrom(currentFen, square);
+      if (targets.length) {
+        setExploreSelected(square);
+        setExploreTargets(targets);
+        setExploreResult(null);
+      } else {
+        resetExploreSelection();
+      }
+    },
+    [exploreSelected, exploreTargets, resetExploreSelection],
+  );
+
+  // read the "why not X" explanation aloud too
+  useEffect(() => {
+    if (!voiceOn || exploreLoading || !exploreResult) return;
+    speak(exploreResult.message);
+    return () => stopSpeaking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exploreResult, exploreLoading, voiceOn]);
+
+  const shareRef = useRef<HTMLDivElement>(null);
+
+const handleShare = async () => {
+  if (!shareRef.current) return;
+  const dataUrl = await toPng(shareRef.current);
+  const link = document.createElement("a");
+  link.download = "chessbuddy-move.png";
+  link.href = dataUrl;
+  link.click();
+};
+
+const handleSavePuzzle = () => {
+  if (!playedMove || !playedMove.bestUci || !playedMove.bestSan) return;
+  savePuzzle({
+    id: `${Date.now()}-${playedMove.ply}`,
+    fen: playedMove.fenBefore,
+    bestMove: playedMove.bestUci,
+    bestMoveSan: playedMove.bestSan,
+    playerMove: playedMove.uci,
+    playerMoveSan: playedMove.san,
+    classification: playedMove.classification ?? "mistake",
+    whiteName,
+    blackName,
+    savedAt: Date.now(),
+  });
+  alert("Puzzle saved! Check My Puzzles page.");
+};
+
 
   const N = parsed.moves.length;
   const myColor = playerColor === "white" ? "w" : "b";
@@ -137,16 +255,20 @@ export function GameReview({
             }
             const sacrifice = matBefore - matAfter;
 
-            const res = classifyMove({
-              ply: mv.ply,
-              playedUci: mv.uci,
-              bestUci: bUci,
-              bestCpStm: posStm[k - 1],
-              secondCpStm: posSecond[k - 1],
-              moverAfterCp: -stm,
-              legalCount,
-              sacrifice,
-            });
+           const sanSoFar = working.slice(0, k).map((m) => m.san);
+const bookMatchPlies = bookPlies(sanSoFar);
+
+const res = classifyMove({
+  ply: mv.ply,
+  playedUci: mv.uci,
+  bestUci: bUci,
+  bestCpStm: posStm[k - 1],
+  secondCpStm: posSecond[k - 1],
+  moverAfterCp: -stm,
+  legalCount,
+  sacrifice,
+  bookMatchPlies,
+});
 
             // motifs for coach commentary
             const playedMotifs = detectMotifs(mv.fenBefore, mv.uci);
@@ -205,7 +327,14 @@ export function GameReview({
   }, [parsed, N, myColor]);
 
   /* --------------------------- navigation --------------------------- */
-  const go = useCallback((p: number) => setPly(Math.max(0, Math.min(N, p))), [N]);
+  const go = useCallback(
+    (p: number) => {
+      setPly(Math.max(0, Math.min(N, p)));
+      setExploreResult(null);
+      resetExploreSelection();
+    },
+    [N, resetExploreSelection],
+  );
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -233,6 +362,23 @@ export function GameReview({
   const evalWhite = ply === 0 ? startEval : moves[ply - 1].evalWhiteCp;
 
   const playedMove = ply >= 1 ? moves[ply - 1] : null;
+
+  const openingMatch = useMemo(() => {
+    if (ply === 0) return null;
+    const sanSoFar = moves.slice(0, ply).map((m) => m.san);
+    return matchOpeningName(sanSoFar);
+  }, [moves, ply]);
+
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    if (playedMove?.san) playSoundForSan(playedMove.san);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ply]);
+
   const forwardMove = moves[ply] ?? null;
   const forwardBest = forwardMove?.bestUci ?? null;
   const arrow =
@@ -273,6 +419,17 @@ export function GameReview({
     ply === 0
       ? "Step through the game and I'll break down every move — the good, the bad, and the brilliant."
       : (playedMove?.coachMessage ?? "");
+
+  // Speak the coach's commentary aloud whenever it changes (new move
+  // selected, or analysis finishes). Skips the "Thinking…" state so we
+  // never read that placeholder out loud.
+  useEffect(() => {
+    if (!voiceOn || thinking || !coachMessage) return;
+    if (exploreOn && (exploreLoading || exploreResult)) return;
+    speak(coachMessage);
+    return () => stopSpeaking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachMessage, thinking, voiceOn, exploreOn, exploreLoading, exploreResult]);
 
   const showBest =
     !!playedMove?.analyzed &&
@@ -315,6 +472,13 @@ export function GameReview({
               arrow={arrow}
               checkSquare={checkSquare}
               badge={badge}
+              onSquareClick={
+                exploreOn
+                  ? (square) => handleExploreClick(square, fen, ply)
+                  : undefined
+              }
+              selectedSquare={exploreOn ? exploreSelected : null}
+              legalMoves={exploreOn ? exploreTargets : undefined}
             />
           </div>
         </div>
@@ -343,13 +507,144 @@ export function GameReview({
 
       {/* side column */}
       <div className="space-y-4">
-        <CoachCard
-          title={coachTitle}
-          message={coachMessage}
-          classification={ply === 0 ? null : (playedMove?.classification ?? null)}
-          evalBadge={evalBadge}
-          thinking={thinking}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setExploreOn((v) => {
+                const next = !v;
+                resetExploreSelection();
+                setExploreResult(null);
+                if (!next) stopSpeaking();
+                return next;
+              });
+            }}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs ${
+              exploreOn
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-line bg-panel text-muted hover:text-fg"
+            }`}
+            title="Click a piece, then a square, to ask why the coach would or wouldn't play it"
+          >
+            <span>🔍</span>
+            {exploreOn ? "Exploring — pick a piece" : "Ask about a move"}
+          </button>
+          {ttsSupported && (
+            <button
+              type="button"
+              onClick={() => {
+                setVoiceOn((v) => {
+                  const next = !v;
+                  if (!next) stopSpeaking();
+                  return next;
+                });
+              }}
+              className="flex items-center gap-1.5 rounded-full border border-line bg-panel px-3 py-1 text-xs text-muted hover:text-fg"
+              title={voiceOn ? "Mute coach voice" : "Unmute coach voice"}
+            >
+              <span>{voiceOn ? "🔊" : "🔇"}</span>
+              {voiceOn ? "Voice on" : "Voice off"}
+            </button>
+          )}
+        </div>
+        {exploreOn && (exploreLoading || exploreResult) ? (
+          <div className="rounded-2xl border border-accent/40 bg-panel p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🔍</span>
+                {exploreLoading ? (
+                  <span className="inline-flex items-center gap-2 text-sm text-faint">
+                    <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" />
+                    Checking that move…
+                  </span>
+                ) : (
+                  <span className="text-sm font-semibold text-fg">
+                    {exploreResult?.title}
+                  </span>
+                )}
+              </div>
+              {!exploreLoading && (
+                <button
+                  type="button"
+                  onClick={() => setExploreResult(null)}
+                  className="shrink-0 text-xs text-faint hover:text-fg"
+                >
+                  ← back to move review
+                </button>
+              )}
+            </div>
+            {!exploreLoading && exploreResult && (
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {exploreResult.message}
+              </p>
+            )}
+          </div>
+        ) : (
+          <CoachCard
+            title={coachTitle}
+            message={coachMessage}
+            classification={ply === 0 ? null : (playedMove?.classification ?? null)}
+            evalBadge={evalBadge}
+            thinking={thinking}
+            openingName={
+              openingMatch && playedMove?.classification === "book"
+                ? `${openingMatch.name} (${openingMatch.eco})`
+                : null
+            }
+          />
+        )}
+      {playedMove?.classification === "brilliant" && (
+  <>
+    <div ref={shareRef} style={{ width: 500, padding: 20, background: "black", color: "white" }}>
+      <h1 style={{ marginBottom: 12 }}>Brilliant Move! {playedMove.san}</h1>
+      <div style={{ width: 460 }}>
+        <Board
+          fen={playedMove.fenAfter}
+          orientation={orientation}
+          lastMove={{ from: playedMove.uci.slice(0, 2), to: playedMove.uci.slice(2, 4) }}
+          arrow={null}
+          checkSquare={null}
+          badge={{ square: playedMove.uci.slice(2, 4), classification: "brilliant" }}
         />
+      </div>
+      <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.5 }}>
+        {playedMove.coachMessage}
+      </p>
+    </div>
+    <button
+      onClick={handleShare}
+      className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg"
+    >
+      Share this move
+    </button>
+  </>
+)}
+
+{(playedMove?.classification === "mistake" ||
+  playedMove?.classification === "blunder") && (
+  <button
+    onClick={() => {
+      if (!playedMove || !playedMove.bestUci || !playedMove.bestSan) return;
+      savePuzzle({
+        id: `${Date.now()}-${playedMove.ply}`,
+        fen: playedMove.fenBefore,
+        bestMove: playedMove.bestUci,
+        bestMoveSan: playedMove.bestSan,
+        playerMove: playedMove.uci,
+        playerMoveSan: playedMove.san,
+        classification: playedMove.classification ?? "mistake",
+        whiteName,
+        blackName,
+        savedAt: Date.now(),
+      });
+      alert("Puzzle saved! Check My Puzzles page.");
+    }}
+    className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg"
+  >
+    Save as Puzzle
+  </button>
+)}
+
 
         {showBest && playedMove && (
           <div className="panel rounded-xl p-3">
