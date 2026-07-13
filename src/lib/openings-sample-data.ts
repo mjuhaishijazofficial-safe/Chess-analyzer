@@ -10,7 +10,7 @@ export const SAMPLE_OPENINGS: OpeningSummary[] = [
     id: "italian-game",
     name: "Italian Game",
     eco: "C50",
-    moves: "e4 e5 Nf3 Nc6 Bc4",
+    moves: "e4 e5 Nf3 Nc6 Bc4 d6 Nc3 Bg4 Nxe5 Bxd1 Bxf7+ Ke7 Nd5#",
     category: "King's Pawn",
     difficulty: "beginner",
     popularity: 92,
