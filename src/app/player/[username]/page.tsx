@@ -83,7 +83,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
           </span>
         </div>
         {rows.length > 0 ? (
-          <GamesTable rows={rows} username={profile.username} />
+          <GamesTable
+            rows={rows}
+            username={profile.username}
+            platform={isLichess ? "lichess" : "chesscom"}
+          />
         ) : (
           <p className="panel rounded-2xl p-6 text-sm text-muted">
             No recent games found in this player&apos;s public archives.
