@@ -5,27 +5,50 @@ import { useRouter } from "next/navigation";
 
 const RECENT_KEY = "chessbuddy:recent";
 
+type Platform = "chesscom" | "lichess";
+
+interface RecentEntry {
+  username: string;
+  platform: Platform;
+}
+
+/** Reads the old string[] format (chess.com only) or the new RecentEntry[] format. */
+function parseRecent(raw: string): RecentEntry[] {
+  const parsed = JSON.parse(raw);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.map((item) =>
+    typeof item === "string"
+      ? { username: item, platform: "chesscom" as const }
+      : (item as RecentEntry),
+  );
+}
+
 export function LoginForm({ autoFocus = true }: { autoFocus?: boolean }) {
   const router = useRouter();
+  const [platform, setPlatform] = useState<Platform>("chesscom");
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [recent, setRecent] = useState<RecentEntry[]>([]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(RECENT_KEY);
-      if (raw) setRecent(JSON.parse(raw));
+      if (raw) setRecent(parseRecent(raw));
     } catch {
       /* ignore */
     }
   }, []);
 
-  async function connect(rawUsername: string) {
+  async function connect(rawUsername: string, targetPlatform: Platform = platform) {
     const username = rawUsername.trim().toLowerCase();
     setError(null);
     if (!username) {
-      setError("Enter your Chess.com username.");
+      setError(
+        targetPlatform === "chesscom"
+          ? "Enter your Chess.com username."
+          : "Enter your Lichess username.",
+      );
       return;
     }
     if (!/^[a-z0-9_-]{2,30}$/.test(username)) {
@@ -35,24 +58,34 @@ export function LoginForm({ autoFocus = true }: { autoFocus?: boolean }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/verify/${encodeURIComponent(username)}`);
+      const endpoint =
+        targetPlatform === "chesscom"
+          ? `/api/verify/${encodeURIComponent(username)}`
+          : `/api/verify-lichess/${encodeURIComponent(username)}`;
+      const res = await fetch(endpoint);
       const data = await res.json();
       if (!data.ok) {
-        setError(data.error ?? "Could not find that player.");
+        setError(
+          data.error ??
+            `Could not find that player on ${targetPlatform === "chesscom" ? "Chess.com" : "Lichess"}.`,
+        );
         setLoading(false);
         return;
       }
       // persist to recent
       try {
         const next = [
-          data.username,
-          ...recent.filter((r) => r !== data.username),
+          { username: data.username, platform: targetPlatform },
+          ...recent.filter(
+            (r) => !(r.username === data.username && r.platform === targetPlatform),
+          ),
         ].slice(0, 5);
         localStorage.setItem(RECENT_KEY, JSON.stringify(next));
       } catch {
         /* ignore */
       }
-      router.push(`/player/${encodeURIComponent(data.username)}`);
+      const query = targetPlatform === "lichess" ? "?platform=lichess" : "";
+      router.push(`/player/${encodeURIComponent(data.username)}${query}`);
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -61,6 +94,28 @@ export function LoginForm({ autoFocus = true }: { autoFocus?: boolean }) {
 
   return (
     <div className="w-full max-w-md">
+      {/* Platform toggle */}
+      <div className="mb-3 inline-flex rounded-lg border border-line bg-panel p-1">
+        {(["chesscom", "lichess"] as const).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => {
+              setPlatform(p);
+              if (error) setError(null);
+            }}
+            disabled={loading}
+            className={`rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition disabled:opacity-60 ${
+              platform === p
+                ? "bg-accent text-black"
+                : "text-faint hover:text-fg"
+            }`}
+          >
+            {p === "chesscom" ? "Chess.com" : "Lichess"}
+          </button>
+        ))}
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -82,7 +137,11 @@ export function LoginForm({ autoFocus = true }: { autoFocus?: boolean }) {
               if (error) setError(null);
             }}
             disabled={loading}
-            placeholder="your-chess-com-username"
+            placeholder={
+              platform === "chesscom"
+                ? "your-chess-com-username"
+                : "your-lichess-username"
+            }
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
@@ -118,12 +177,15 @@ export function LoginForm({ autoFocus = true }: { autoFocus?: boolean }) {
           </span>
           {recent.map((r) => (
             <button
-              key={r}
-              onClick={() => connect(r)}
+              key={`${r.platform}:${r.username}`}
+              onClick={() => connect(r.username, r.platform)}
               disabled={loading}
-              className="rounded-full border border-line bg-panel px-3 py-1 text-xs text-muted transition hover:border-line-strong hover:text-fg disabled:opacity-60"
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-panel px-3 py-1 text-xs text-muted transition hover:border-line-strong hover:text-fg disabled:opacity-60"
             >
-              @{r}
+              @{r.username}
+              <span className="text-faint">
+                · {r.platform === "chesscom" ? "cc" : "li"}
+              </span>
             </button>
           ))}
         </div>
