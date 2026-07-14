@@ -78,9 +78,13 @@ export async function fetchExplorerStats(
       // Revalidate once a day — opening theory data doesn't change minute to minute.
       next: { revalidate: 60 * 60 * 24 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error("[lichess-explorer] request failed", res.status, url);
+      return null;
+    }
     return (await res.json()) as ExplorerResult;
-  } catch {
+  } catch (err) {
+    console.error("[lichess-explorer] fetch threw", err, url);
     return null;
   }
 }
