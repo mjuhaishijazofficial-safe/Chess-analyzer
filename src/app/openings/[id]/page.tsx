@@ -1,122 +1,49 @@
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-import { getPlayerBundle as getChesscomBundle } from "@/lib/chesscom";
-import { getPlayerBundle as getLichessBundle } from "@/lib/lichess";
-import { toChesscomBundle } from "@/lib/lichess-adapter";
-import { toRow } from "@/lib/format";
-import { ProfileHeader } from "@/components/profile-header";
-import { RatingCards, SectionTitle } from "@/components/rating-cards";
-import { RatingChart } from "@/components/rating-chart";
-import { GamesTable } from "@/components/games-table";
+"use client";
 
-interface PageProps {
-  params: Promise<{ username: string }>;
-  searchParams: Promise<{ platform?: string }>;
-}
+import { useParams } from "next/navigation";
+import { SAMPLE_OPENINGS } from "@/lib/openings-sample-data";
+import { OpeningBoardViewer } from "@/components/opening-board-viewer";
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: PageProps): Promise<Metadata> {
-  const { username } = await params;
-  const { platform } = await searchParams;
-  const site = platform === "lichess" ? "Lichess" : "Chess.com";
-  return {
-    title: `@${username.toLowerCase()}`,
-    description: `${site} profile, ratings and recent games for ${username}.`,
-  };
-}
+export default function OpeningDetailPage() {
+  const params = useParams();
+  const opening = SAMPLE_OPENINGS.find((o) => o.id === params.id);
 
-export default async function PlayerPage({ params, searchParams }: PageProps) {
-  const { username } = await params;
-  const { platform } = await searchParams;
-  const isLichess = platform === "lichess";
-
-  const bundle = isLichess
-    ? await getLichessBundle(username.toLowerCase()).then(
-        (b) => (b ? toChesscomBundle(b) : null),
-      )
-    : await getChesscomBundle(username.toLowerCase());
-
-  if (!bundle) notFound();
-
-  const { profile, stats, games } = bundle;
-  const rows = games.map((g) => toRow(g, profile.username));
-
-  const tally = rows.reduce(
-    (acc, r) => {
-      acc[r.outcome]++;
-      return acc;
-    },
-    { win: 0, draw: 0, loss: 0 },
-  );
+  if (!opening) {
+    return (
+      <div className="p-6">
+        <h1 className="text-xl font-bold">Opening not found</h1>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 px-4 py-8 sm:px-6 sm:py-10">
-      <ProfileHeader profile={profile} />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-2">{opening.name}</h1>
+      <p className="text-sm opacity-70 mb-1">ECO: {opening.eco}</p>
+      <p className="text-sm opacity-70 mb-4">Moves: {opening.moves}</p>
+      <p className="text-sm mb-6">Category: {opening.category}</p>
 
-      {rows.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <SummaryStat label="Games analyzed" value={String(rows.length)} />
-          <SummaryStat
-            label="Wins"
-            value={String(tally.win)}
-            tone="accent"
-          />
-          <SummaryStat label="Draws" value={String(tally.draw)} />
-          <SummaryStat label="Losses" value={String(tally.loss)} tone="rose" />
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-3">How it's played</h2>
+        <OpeningBoardViewer moves={opening.moves} />
+      </div>
+
+      {opening.variations && opening.variations.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Variations</h2>
+          <ul className="space-y-2">
+            {opening.variations.map((v) => (
+              <li
+                key={v.name}
+                className="border border-white/10 rounded-lg p-3"
+              >
+                <p className="font-medium">{v.name}</p>
+                <p className="text-sm opacity-70">{v.moves}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-
-      <RatingCards stats={stats} />
-
-      <section>
-        <SectionTitle>// rating trend</SectionTitle>
-        <RatingChart rows={rows} />
-      </section>
-
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <SectionTitle>// recent games</SectionTitle>
-          <span className="font-mono text-xs text-faint">
-            latest {rows.length}
-          </span>
-        </div>
-        {rows.length > 0 ? (
-          <GamesTable
-            rows={rows}
-            username={profile.username}
-            platform={isLichess ? "lichess" : "chesscom"}
-          />
-        ) : (
-          <p className="panel rounded-2xl p-6 text-sm text-muted">
-            No recent games found in this player&apos;s public archives.
-          </p>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function SummaryStat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "accent" | "rose";
-}) {
-  const color =
-    tone === "accent" ? "text-accent" : tone === "rose" ? "text-rose" : "text-fg";
-  return (
-    <div className="panel rounded-xl p-4">
-      <div className="font-mono text-[11px] uppercase tracking-wider text-faint">
-        {label}
-      </div>
-      <div className={`mt-1 text-2xl font-semibold tabular-nums ${color}`}>
-        {value}
-      </div>
     </div>
   );
 }
