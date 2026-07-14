@@ -122,6 +122,11 @@ function toGameSide(
   };
 }
 
+/** Converts a single Lichess game — used by the game-review page. */
+export function toChesscomGame(game: LichessGame): Game {
+  return toChesscomGames([game])[0];
+}
+
 export function toChesscomGames(games: LichessGame[]): Game[] {
   return games.map((g) => ({
     url: `https://lichess.org/${g.id}`,
