@@ -5,10 +5,13 @@
 // feature — categories, popular cards, learning hub etc. get added here
 // as we build each feature.
 
+import { useRouter } from "next/navigation";
 import { OpeningSearch } from "@/components/opening-search";
 import { SAMPLE_OPENINGS } from "@/lib/openings-sample-data";
 
 export default function OpeningsPage() {
+  const router = useRouter();
+
   return (
     <main
       style={{
@@ -34,9 +37,7 @@ export default function OpeningsPage() {
         <OpeningSearch
           dataset={SAMPLE_OPENINGS}
           onSelect={(opening) => {
-            // Swap for real navigation once the Opening Details page exists:
-            // router.push(`/openings/${opening.id}`)
-            console.log("selected:", opening.name);
+            router.push(`/openings/${opening.id}`);
           }}
         />
 
