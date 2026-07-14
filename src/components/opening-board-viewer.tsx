@@ -35,6 +35,18 @@ export function OpeningBoardViewer({ moves }: OpeningBoardViewerProps) {
     setIndex((i) => Math.min(steps.length - 1, i + 1));
   }
 
+  // Group the move list into move-number pairs for display, e.g.
+  // "1. e4 c5", "2. Nf3 d6" — steps[0] is the synthetic "Start" entry so
+  // real moves start at steps[1].
+  const movePairs: { number: number; whiteStepIndex: number; blackStepIndex: number | null }[] = [];
+  for (let i = 1; i < steps.length; i += 2) {
+    movePairs.push({
+      number: Math.ceil(i / 2),
+      whiteStepIndex: i,
+      blackStepIndex: i + 1 < steps.length ? i + 1 : null,
+    });
+  }
+
   return (
     <div className="max-w-sm">
       <Board fen={current.fen} lastMove={lastMove} />
@@ -59,6 +71,44 @@ export function OpeningBoardViewer({ moves }: OpeningBoardViewerProps) {
         >
           Forward →
         </button>
+      </div>
+
+      {/* Interactive move list — click any move to jump the board there instantly. */}
+      <div className="mt-4 flex flex-wrap gap-x-1 gap-y-1.5 text-sm">
+        <button
+          type="button"
+          onClick={() => setIndex(0)}
+          className={`px-2 py-0.5 rounded ${
+            index === 0 ? "bg-white/15 font-medium" : "opacity-60 hover:opacity-100"
+          }`}
+        >
+          Start
+        </button>
+        {movePairs.map((pair) => (
+          <span key={pair.number} className="flex items-center gap-1">
+            <span className="opacity-40 font-mono text-xs">{pair.number}.</span>
+            <button
+              type="button"
+              onClick={() => setIndex(pair.whiteStepIndex)}
+              className={`px-2 py-0.5 rounded ${
+                index === pair.whiteStepIndex ? "bg-white/15 font-medium" : "opacity-80 hover:opacity-100"
+              }`}
+            >
+              {steps[pair.whiteStepIndex].san}
+            </button>
+            {pair.blackStepIndex !== null && (
+              <button
+                type="button"
+                onClick={() => setIndex(pair.blackStepIndex!)}
+                className={`px-2 py-0.5 rounded ${
+                  index === pair.blackStepIndex ? "bg-white/15 font-medium" : "opacity-80 hover:opacity-100"
+                }`}
+              >
+                {steps[pair.blackStepIndex].san}
+              </button>
+            )}
+          </span>
+        ))}
       </div>
     </div>
   );

@@ -12,10 +12,25 @@ export function MoveList({
   currentPly: number;
   onSelect: (ply: number) => void;
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: "nearest" });
+    const container = listRef.current;
+    const active = activeRef.current;
+    if (!container || !active) return;
+
+    // Scroll only the move-list's own container, never the page/window.
+    // (scrollIntoView can bubble up and scroll ancestor containers or the
+    // whole page, which is what was causing the board to jump.)
+    const containerRect = container.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+
+    if (activeRect.top < containerRect.top) {
+      container.scrollTop -= containerRect.top - activeRect.top;
+    } else if (activeRect.bottom > containerRect.bottom) {
+      container.scrollTop += activeRect.bottom - containerRect.bottom;
+    }
   }, [currentPly]);
 
   const pairs: { no: number; white?: MoveReview; black?: MoveReview }[] = [];
@@ -30,7 +45,7 @@ export function MoveList({
   }
 
   return (
-    <div className="max-h-[420px] overflow-y-auto pr-1 lg:max-h-[560px]">
+    <div ref={listRef} className="max-h-[420px] overflow-y-auto pr-1 lg:max-h-[560px]">
       <button
         onClick={() => onSelect(0)}
         className={`mb-1 w-full rounded-md px-2 py-1 text-left font-mono text-xs transition ${
