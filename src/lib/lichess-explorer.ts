@@ -4,6 +4,17 @@
 // Docs: https://lichess.org/api#tag/Opening-Explorer
 // Important: the hostname is explorer.lichess.org (NOT lichess.org).
 //
+// ⚠️ SETUP REQUIRED: Since March 2026, Lichess requires authentication
+// for the Opening Explorer (anonymous requests were disabled to stop
+// DDoS abuse — the explorer itself is still free and unlimited).
+// One-time setup:
+//   1. Log in to lichess.org (any account, doesn't need to be special)
+//   2. Go to https://lichess.org/account/oauth/token
+//   3. Create a token — no scopes needed, this is a read-only public endpoint
+//   4. Add it to .env.local in the project root:
+//        LICHESS_API_TOKEN=lip_xxxxxxxxxxxxxxxxxxxxxxxx
+//   5. Restart the dev server (env vars are only read on startup)
+//
 // Two sources are available:
 //   - "masters": human master-level games (small, curated, very reliable)
 //   - "lichess": all rated Lichess games (huge, filterable by rating/speed)
@@ -73,13 +84,28 @@ export async function fetchExplorerStats(
 
   const url = `${BASE_URL}/${source}?${params.toString()}`;
 
+  // Lichess now requires authentication for the Opening Explorer (since
+  // March 2026, to defend against DDoS). A free personal access token
+  // works fine here — see the setup note below fetchExplorerStats().
+  const token = process.env.LICHESS_API_TOKEN;
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   try {
     const res = await fetch(url, {
+      headers,
       // Revalidate once a day — opening theory data doesn't change minute to minute.
       next: { revalidate: 60 * 60 * 24 },
     });
     if (!res.ok) {
-      console.error("[lichess-explorer] request failed", res.status, url);
+      if (res.status === 401) {
+        console.error(
+          "[lichess-explorer] 401 Unauthorized — Lichess now requires a token. " +
+            "Set LICHESS_API_TOKEN in .env.local (see comment in lichess-explorer.ts)."
+        );
+      } else {
+        console.error("[lichess-explorer] request failed", res.status, url);
+      }
       return null;
     }
     return (await res.json()) as ExplorerResult;
