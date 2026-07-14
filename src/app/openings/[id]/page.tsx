@@ -10,11 +10,12 @@ import { fenAfterMoves } from "@/lib/moves-to-fen";
 import { fetchExplorerStats, explorerPercentages } from "@/lib/lichess-explorer";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function OpeningDetailPage({ params }: PageProps) {
-  const opening = SAMPLE_OPENINGS.find((o) => o.id === params.id);
+  const { id } = await params;
+  const opening = SAMPLE_OPENINGS.find((o) => o.id === id);
 
   if (!opening) {
     return (
