@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { findGameByUuid } from "@/lib/chesscom";
+import { findGameById } from "@/lib/lichess";
+import { toChesscomGame } from "@/lib/lichess-adapter";
 import {
   formatDate,
   outcomeFromResult,
@@ -13,6 +15,7 @@ import { GameReview } from "@/components/game-review";
 
 interface PageProps {
   params: Promise<{ username: string; uuid: string }>;
+  searchParams: Promise<{ platform?: string }>;
 }
 
 export async function generateMetadata({
@@ -22,10 +25,15 @@ export async function generateMetadata({
   return { title: `Review · @${username.toLowerCase()}` };
 }
 
-export default async function GameReviewPage({ params }: PageProps) {
+export default async function GameReviewPage({ params, searchParams }: PageProps) {
   const { username, uuid } = await params;
+  const { platform } = await searchParams;
+  const isLichess = platform === "lichess";
   const user = username.toLowerCase();
-  const game = await findGameByUuid(user, uuid);
+
+  const game = isLichess
+    ? await findGameById(uuid).then((g) => (g ? toChesscomGame(g) : null))
+    : await findGameByUuid(user, uuid);
   if (!game) notFound();
 
   const meta = TIME_CLASS_META[game.time_class];
@@ -38,13 +46,18 @@ export default async function GameReviewPage({ params }: PageProps) {
 
   const canReview = game.rules === "chess" && !!game.pgn;
 
+  const backHref = `/player/${encodeURIComponent(user)}${
+    isLichess ? "?platform=lichess" : ""
+  }`;
+  const siteName = isLichess ? "Lichess" : "Chess.com";
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       {/* breadcrumb + meta */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <Link
-            href={`/player/${encodeURIComponent(user)}`}
+            href={backHref}
             className="font-mono text-xs text-muted transition hover:text-fg"
           >
             ← @{user}
@@ -86,7 +99,7 @@ export default async function GameReviewPage({ params }: PageProps) {
           rel="noreferrer"
           className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg transition hover:border-line-strong"
         >
-          Open on Chess.com ↗
+          Open on {siteName} ↗
         </a>
       </div>
 
