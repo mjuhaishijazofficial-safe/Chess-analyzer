@@ -88,6 +88,7 @@ export async function fetchExplorerStats(
   // March 2026, to defend against DDoS). A free personal access token
   // works fine here — see the setup note below fetchExplorerStats().
   const token = process.env.LICHESS_API_TOKEN;
+  console.log("[lichess-explorer] token loaded?", !!token, token ? `(starts with ${token.slice(0, 4)})` : "");
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
