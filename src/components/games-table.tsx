@@ -12,6 +12,7 @@ import {
 } from "@/lib/format";
 
 type OutcomeFilter = "all" | Outcome;
+type Platform = "chesscom" | "lichess";
 
 const OUTCOME_TABS: { key: OutcomeFilter; label: string }[] = [
   { key: "all", label: "All" },
@@ -23,9 +24,11 @@ const OUTCOME_TABS: { key: OutcomeFilter; label: string }[] = [
 export function GamesTable({
   rows,
   username,
+  platform = "chesscom",
 }: {
   rows: GameRow[];
   username: string;
+  platform?: Platform;
 }) {
   const [outcome, setOutcome] = useState<OutcomeFilter>("all");
   const [tc, setTc] = useState<TimeClass | "all">("all");
@@ -98,7 +101,12 @@ export function GamesTable({
       ) : (
         <ul className="divide-y divide-line">
           {filtered.map((r) => (
-            <GameRowItem key={r.url} row={r} username={username} />
+            <GameRowItem
+              key={r.url}
+              row={r}
+              username={username}
+              platform={platform}
+            />
           ))}
         </ul>
       )}
@@ -106,12 +114,22 @@ export function GamesTable({
   );
 }
 
-function GameRowItem({ row, username }: { row: GameRow; username: string }) {
+function GameRowItem({
+  row,
+  username,
+  platform,
+}: {
+  row: GameRow;
+  username: string;
+  platform: Platform;
+}) {
   const meta = TIME_CLASS_META[row.timeClass];
   const reviewable = !!row.uuid && row.rules === "chess";
+  const query = platform === "lichess" ? "?platform=lichess" : "";
   const reviewHref = reviewable
-    ? `/player/${encodeURIComponent(username)}/game/${row.uuid}`
+    ? `/player/${encodeURIComponent(username)}/game/${row.uuid}${query}`
     : null;
+  const siteName = platform === "lichess" ? "Lichess" : "Chess.com";
 
   const inner = (
     <>
@@ -190,7 +208,7 @@ function GameRowItem({ row, username }: { row: GameRow; username: string }) {
           href={row.url}
           target="_blank"
           rel="noreferrer"
-          title="Open on Chess.com"
+          title={`Open on ${siteName}`}
           className="grid h-8 w-8 place-items-center rounded-lg text-faint transition hover:bg-fg/5 hover:text-fg"
         >
           ↗
