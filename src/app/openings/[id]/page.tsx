@@ -30,9 +30,16 @@ export default async function OpeningDetailPage({ params }: PageProps) {
   const liveStats = await fetchExplorerStats(fen, { source: "masters", topGames: 3 });
   const pct = liveStats ? explorerPercentages(liveStats) : null;
 
-  const whitePct = pct?.whitePct ?? opening.winRateWhite;
-  const drawPct = pct?.drawPct ?? opening.drawRate;
-  const blackPct = pct ? 100 - pct.whitePct - pct.drawPct : 100 - opening.winRateWhite - opening.drawRate;
+  // If Lichess found ZERO games at this exact position (common for long/rare
+  // lines, like a forced-mate trap line few masters ever walk into), fall
+  // back to our own estimated numbers rather than showing a misleading
+  // 0% / 0% / 100% split.
+  const hasLiveData = pct !== null && pct.totalGames > 0;
+  const whitePct = hasLiveData ? pct!.whitePct : opening.winRateWhite;
+  const drawPct = hasLiveData ? pct!.drawPct : opening.drawRate;
+  const blackPct = hasLiveData
+    ? 100 - pct!.whitePct - pct!.drawPct
+    : 100 - opening.winRateWhite - opening.drawRate;
 
   return (
     <div className="p-6">
@@ -46,7 +53,11 @@ export default async function OpeningDetailPage({ params }: PageProps) {
         <span>Draws: <strong>{drawPct}%</strong></span>
         <span>Black wins: <strong>{blackPct}%</strong></span>
         <span className="opacity-50 ml-auto">
-          {pct ? `live · ${pct.totalGames.toLocaleString()} master games` : "estimated data"}
+          {hasLiveData
+            ? `live · ${pct!.totalGames.toLocaleString()} master games`
+            : pct
+            ? "no master games reached this exact line · estimated data"
+            : "estimated data"}
         </span>
       </div>
 
