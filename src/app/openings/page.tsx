@@ -1,19 +1,56 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+// src/app/openings/page.tsx
+// Dedicated Opening Explorer landing page. Starts with just the search
+// feature — categories, popular cards, learning hub etc. get added here
+// as we build each feature.
+
 import { OpeningSearch } from "@/components/opening-search";
 import { SAMPLE_OPENINGS } from "@/lib/openings-sample-data";
 
 export default function OpeningsPage() {
-  const router = useRouter();
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Openings</h1>
-      <OpeningSearch
-        dataset={SAMPLE_OPENINGS}
-        onSelect={(o) => router.push(`/openings/${o.id}`)}
-      />
-    </div>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#0b0d0f",
+        padding: "64px 24px",
+      }}
+    >
+      <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+        <p
+          style={{
+            fontFamily: "ui-monospace, monospace",
+            fontSize: 12,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: "#838b93",
+            marginBottom: 24,
+          }}
+        >
+          Opening Explorer
+        </p>
+
+        <OpeningSearch
+          dataset={SAMPLE_OPENINGS}
+          onSelect={(opening) => {
+            // Swap for real navigation once the Opening Details page exists:
+            // router.push(`/openings/${opening.id}`)
+            console.log("selected:", opening.name);
+          }}
+        />
+
+        <p
+          style={{
+            fontFamily: "ui-monospace, monospace",
+            fontSize: 12,
+            color: "#838b93",
+            marginTop: 24,
+          }}
+        >
+          try: "sicilian" · "C50" · "e4 e5"
+        </p>
+      </div>
+    </main>
   );
 }
