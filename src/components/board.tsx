@@ -176,7 +176,7 @@ export function Board({
 
       {/* legal move indicators — ring around capturable pieces, dot on empty squares */}
       {legalMoves &&
-        legalMoves.map((sq) => {
+        Array.from(new Set(legalMoves)).map((sq) => {
           const { x, y } = sqXY(sq, orientation);
           const isCapture = pieces.some((p) => p.square === sq);
           return isCapture ? (
