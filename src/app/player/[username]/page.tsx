@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPlayerBundle } from "@/lib/chesscom";
+import { getPlayerBundle as getChesscomBundle } from "@/lib/chesscom";
+import { getPlayerBundle as getLichessBundle } from "@/lib/lichess";
+import { toChesscomBundle } from "@/lib/lichess-adapter";
 import { toRow } from "@/lib/format";
 import { ProfileHeader } from "@/components/profile-header";
 import { RatingCards, SectionTitle } from "@/components/rating-cards";
@@ -9,21 +11,33 @@ import { GamesTable } from "@/components/games-table";
 
 interface PageProps {
   params: Promise<{ username: string }>;
+  searchParams: Promise<{ platform?: string }>;
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: PageProps): Promise<Metadata> {
   const { username } = await params;
+  const { platform } = await searchParams;
+  const site = platform === "lichess" ? "Lichess" : "Chess.com";
   return {
     title: `@${username.toLowerCase()}`,
-    description: `Chess.com profile, ratings and recent games for ${username}.`,
+    description: `${site} profile, ratings and recent games for ${username}.`,
   };
 }
 
-export default async function PlayerPage({ params }: PageProps) {
+export default async function PlayerPage({ params, searchParams }: PageProps) {
   const { username } = await params;
-  const bundle = await getPlayerBundle(username.toLowerCase());
+  const { platform } = await searchParams;
+  const isLichess = platform === "lichess";
+
+  const bundle = isLichess
+    ? await getLichessBundle(username.toLowerCase()).then(
+        (b) => (b ? toChesscomBundle(b) : null),
+      )
+    : await getChesscomBundle(username.toLowerCase());
+
   if (!bundle) notFound();
 
   const { profile, stats, games } = bundle;
