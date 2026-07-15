@@ -26,7 +26,11 @@ export default async function OpeningDetailPage({ params }: PageProps) {
   }
 
   // Ask Lichess what actually happens in real master games from this position.
-  const fen = fenAfterMoves(opening.moves);
+ // Only the first ~8 plies define "the opening" for statistics purposes —
+// the rest of opening.moves may be a full illustrative game (even a
+// checkmate trap line), which no real master game would ever reach.
+const openingPrefix = opening.moves.trim().split(/\s+/).slice(0, 8).join(" ");
+const fen = fenAfterMoves(openingPrefix);
   const liveStats = await fetchExplorerStats(fen, { source: "masters", topGames: 3 });
   const pct = liveStats ? explorerPercentages(liveStats) : null;
 
