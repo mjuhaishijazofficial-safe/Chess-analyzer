@@ -43,18 +43,19 @@ export default function HomePage() {
             <div className="mt-8">
               <LoginForm />
             </div>
-
-            <a
-              href="/compare"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent"
-            >
-              Or compare two players
-              <span aria-hidden>→</span>
-            </a>
           </div>
 
           {/* right — HUD player card */}
           <div className="animate-rise [animation-delay:120ms]">
+            <div className="mb-3 flex justify-end">
+              <a
+                href="/compare"
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel/80 px-3 py-1.5 text-xs font-medium text-muted backdrop-blur transition hover:border-accent/40 hover:text-accent"
+              >
+                ⚖️ Compare two players
+                <span aria-hidden>→</span>
+              </a>
+            </div>
             <Suspense fallback={<PlayerHudSkeleton />}>
               <PlayerHud />
             </Suspense>
