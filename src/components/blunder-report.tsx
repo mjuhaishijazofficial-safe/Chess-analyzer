@@ -6,7 +6,7 @@ import { analyzeGameMoves } from "@/lib/analyze-game";
 import { aggregateBlunders, type BlunderReport, type Phase } from "@/lib/blunder-stats";
 import { GameReview } from "@/components/game-review";
 
-const GAME_LIMIT = 5;
+const GAME_LIMIT = 3;
 
 interface GameApiRow {
   uuid: string | null;
