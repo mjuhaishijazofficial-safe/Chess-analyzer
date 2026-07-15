@@ -6,6 +6,7 @@ import { toChesscomBundle } from "@/lib/lichess-adapter";
 import type { PlayerStats } from "@/lib/chesscom";
 import { toRow, TIME_CLASS_META, type GameRow } from "@/lib/format";
 import { ProfileHeader } from "@/components/profile-header";
+import { SinceLastVisit } from "@/components/since-last-visit";
 import { RatingCards, SectionTitle } from "@/components/rating-cards";
 import { RatingChart } from "@/components/rating-chart";
 import { GamesTable } from "@/components/games-table";
@@ -89,6 +90,20 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
       <ProfileHeader
         profile={profile}
         platform={isLichess ? "lichess" : "chesscom"}
+      />
+
+      <SinceLastVisit
+        username={profile.username}
+        platform={isLichess ? "lichess" : "chesscom"}
+        ratings={{
+          bullet: displayStats?.chess_bullet?.last?.rating,
+          blitz: displayStats?.chess_blitz?.last?.rating,
+          rapid: displayStats?.chess_rapid?.last?.rating,
+          daily: displayStats?.chess_daily?.last?.rating,
+        }}
+        wins={tally.win}
+        draws={tally.draw}
+        losses={tally.loss}
       />
 
       {rows.length > 0 && (
