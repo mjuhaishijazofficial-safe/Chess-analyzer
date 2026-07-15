@@ -12,6 +12,10 @@ export interface BlunderSample {
   bestSan: string | null;
   phase: Phase;
   winDrop: number;
+  /** Everything needed to turn this sample into a saved puzzle. */
+  fen: string;
+  playerUci: string;
+  bestUci: string | null;
 }
 
 export interface BlunderReport {
@@ -71,6 +75,9 @@ export function aggregateBlunders(
         bestSan: mv.bestSan,
         phase,
         winDrop: mv.winDrop ?? 0,
+        fen: mv.fenBefore,
+        playerUci: mv.uci,
+        bestUci: mv.bestUci,
       });
     }
   }
