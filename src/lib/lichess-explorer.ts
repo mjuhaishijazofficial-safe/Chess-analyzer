@@ -12,11 +12,21 @@
 
 const EXPLORER_BASE = "https://explorer.lichess.ovh";
 
-const HEADERS: HeadersInit = {
-  "User-Agent": "chessbuddy/1.0 (Next.js analytics demo; +https://github.com/chessbuddy)",
-  Accept: "application/json",
-};
-
+function buildHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    "User-Agent": "chessbuddy/1.0 (Next.js analytics demo; +https://github.com/chessbuddy)",
+    Accept: "application/json",
+  };
+  // As of March 2026, Lichess requires the opening explorer API to be
+  // authenticated (previously-public anonymous access was removed after
+  // DDoS abuse). A personal access token is enough — no special OAuth
+  // scope is needed for these read-only public endpoints.
+  const token = process.env.LICHESS_API_TOKEN;
+  if (token) {
+    (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
 export type ExplorerSource = "masters" | "lichess";
 
 export interface ExplorerGameRef {
@@ -68,12 +78,11 @@ export async function fetchExplorerStats(
   const path = source === "masters" ? "/masters" : "/lichess";
 
   try {
-    const res = await fetch(`${EXPLORER_BASE}${path}?${qs.toString()}`, {
-      headers: HEADERS,
+   const res = await fetch(`${EXPLORER_BASE}${path}?${qs.toString()}`, {
+      headers: buildHeaders(),
       // Opening stats for a fixed position barely change — cache for a day.
       next: { revalidate: 86400 },
     });
-
     if (!res.ok) {
       console.error(`[lichess-explorer] fetch failed: ${res.status} ${res.statusText} for ${path}?${qs.toString()}`);
       return null;
