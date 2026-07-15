@@ -83,7 +83,8 @@ export async function fetchExplorerStats(
         year: g.year,
       })),
     };
-  } catch {
+  } catch (err) {
+    console.error("[lichess-explorer] fetch failed:", err);
     return null;
   }
 }
