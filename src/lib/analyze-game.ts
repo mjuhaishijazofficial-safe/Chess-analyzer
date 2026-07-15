@@ -50,17 +50,35 @@ export function parseGamePgn(pgn: string): ParsedGame {
   }
 }
 
+export interface AnalyzeGameOptions {
+  /** Movetime (ms) used for the fast first pass across every position. */
+  quickMovetime: number;
+  /**
+   * Movetime (ms) used to re-check only the moves the quick pass flagged as
+   * mistake/blunder/miss. This is where the actual blunder-report numbers
+   * come from, so it gets a much stronger search than the scan pass.
+   */
+  refineMovetime: number;
+  onProgress?: (done: number, total: number, stage: "scan" | "refine") => void;
+}
+
 /**
  * Run one already-ready Engine across every move of a game and classify each
- * one (book / good / inaccuracy / mistake / blunder / …). No board rendering,
- * no coaching text — just the data, so many games can be walked back to back.
+ * one (book / good / inaccuracy / mistake / blunder / …).
+ *
+ * Two passes:
+ *  1. "scan"   — every position gets a quick, shallow eval (fast).
+ *  2. "refine" — only the positions bordering a move the scan flagged as
+ *                mistake/blunder/miss get re-analyzed at real depth, and
+ *                that move's classification is recomputed from the refined
+ *                eval. Most moves (book/good/best) never get re-touched.
+ *
  * Pass the same Engine instance across games to avoid re-initializing Stockfish.
  */
 export async function analyzeGameMoves(
   pgn: string,
   engine: Engine,
-  movetime: number,
-  onProgress?: (done: number, total: number) => void,
+  options: AnalyzeGameOptions,
 ): Promise<MoveReview[]> {
   const parsed = parseGamePgn(pgn);
   if (parsed.error || parsed.moves.length === 0) return [];
@@ -71,9 +89,12 @@ export async function analyzeGameMoves(
   const posSecond: (number | null)[] = [];
   const posBest: (string | null)[] = [];
 
-  for (let k = 0; k <= N; k++) {
-    const fen = k === 0 ? parsed.startFen : working[k - 1].fenAfter;
+  function fenAt(k: number): string {
+    return k === 0 ? parsed.startFen : working[k - 1].fenAfter;
+  }
 
+  async function evalPosition(k: number, movetime: number) {
+    const fen = fenAt(k);
     const probe = new Chess(fen);
     let stm = 0;
     let second: number | null = null;
@@ -91,72 +112,105 @@ export async function analyzeGameMoves(
     posStm[k] = stm;
     posSecond[k] = second;
     posBest[k] = best;
+  }
 
-    if (k > 0) {
-      const whiteToMove = fen.split(" ")[1] === "w";
-      const whiteCp = whiteToMove ? stm : -stm;
-      const mv = working[k - 1];
-      mv.evalWhiteCp = whiteCp;
+  /** Classify move k (1-indexed position, i.e. working[k-1]) from whatever
+   * is currently in posStm/posSecond/posBest for positions k-1 and k. */
+  function classifyOne(k: number) {
+    const fen = fenAt(k);
+    const whiteToMove = fen.split(" ")[1] === "w";
+    const stm = posStm[k];
+    const whiteCp = whiteToMove ? stm : -stm;
+    const mv = working[k - 1];
+    mv.evalWhiteCp = whiteCp;
 
-      const probeBefore = new Chess(mv.fenBefore);
-      const legalCount = probeBefore.moves().length;
+    const probeBefore = new Chess(mv.fenBefore);
+    const legalCount = probeBefore.moves().length;
 
-      const matBefore = material(mv.fenBefore, mv.color);
-      const oppReply = posBest[k];
-      let matAfter = material(mv.fenAfter, mv.color);
-      if (oppReply) {
-        try {
-          const c = new Chess(mv.fenAfter);
-          c.move({
-            from: oppReply.slice(0, 2),
-            to: oppReply.slice(2, 4),
-            promotion: oppReply.length > 4 ? oppReply[4] : undefined,
-          });
-          matAfter = material(c.fen(), mv.color);
-        } catch {
-          /* keep */
-        }
+    const matBefore = material(mv.fenBefore, mv.color);
+    const oppReply = posBest[k];
+    let matAfter = material(mv.fenAfter, mv.color);
+    if (oppReply) {
+      try {
+        const c = new Chess(mv.fenAfter);
+        c.move({
+          from: oppReply.slice(0, 2),
+          to: oppReply.slice(2, 4),
+          promotion: oppReply.length > 4 ? oppReply[4] : undefined,
+        });
+        matAfter = material(c.fen(), mv.color);
+      } catch {
+        /* keep */
       }
-      const sacrifice = matBefore - matAfter;
+    }
+    const sacrifice = matBefore - matAfter;
 
-      const sanSoFar = working.slice(0, k).map((m) => m.san);
-      const bookMatchPlies = bookPlies(sanSoFar);
+    const sanSoFar = working.slice(0, k).map((m) => m.san);
+    const bookMatchPlies = bookPlies(sanSoFar);
 
-      const res = classifyMove({
-        ply: mv.ply,
-        playedUci: mv.uci,
-        bestUci: posBest[k - 1],
-        bestCpStm: posStm[k - 1],
-        secondCpStm: posSecond[k - 1],
-        moverAfterCp: -stm,
-        legalCount,
-        sacrifice,
-        bookMatchPlies,
-      });
+    const res = classifyMove({
+      ply: mv.ply,
+      playedUci: mv.uci,
+      bestUci: posBest[k - 1],
+      bestCpStm: posStm[k - 1],
+      secondCpStm: posSecond[k - 1],
+      moverAfterCp: -stm,
+      legalCount,
+      sacrifice,
+      bookMatchPlies,
+    });
 
-      let cls: Classification = res.classification;
-      if (cls === "mistake" || cls === "inaccuracy") {
-        const bestMotifs = posBest[k - 1] ? detectMotifs(mv.fenBefore, posBest[k - 1]!) : null;
-        if (
-          bestMotifs &&
-          (bestMotifs.fork ||
-            bestMotifs.sacrifice ||
-            (bestMotifs.capture && bestMotifs.capturedValue >= 2) ||
-            (!!bestMotifs.threatPiece && res.winDrop >= 6))
-        ) {
-          cls = "miss";
-        }
+    let cls: Classification = res.classification;
+    if (cls === "mistake" || cls === "inaccuracy") {
+      const bestMotifs = posBest[k - 1] ? detectMotifs(mv.fenBefore, posBest[k - 1]!) : null;
+      if (
+        bestMotifs &&
+        (bestMotifs.fork ||
+          bestMotifs.sacrifice ||
+          (bestMotifs.capture && bestMotifs.capturedValue >= 2) ||
+          (!!bestMotifs.threatPiece && res.winDrop >= 6))
+      ) {
+        cls = "miss";
       }
-
-      mv.bestUci = posBest[k - 1];
-      mv.bestSan = posBest[k - 1] ? uciToSan(mv.fenBefore, posBest[k - 1]!) : null;
-      mv.classification = cls;
-      mv.winDrop = res.winDrop;
-      mv.accuracy = res.accuracy;
-      mv.analyzed = true;
     }
 
-    onProgress?.(k, N);
+    mv.bestUci = posBest[k - 1];
+    mv.bestSan = posBest[k - 1] ? uciToSan(mv.fenBefore, posBest[k - 1]!) : null;
+    mv.classification = cls;
+    mv.winDrop = res.winDrop;
+    mv.accuracy = res.accuracy;
+    mv.analyzed = true;
+  }
+
+  // ---- Pass 1: quick scan across every position ----
+  for (let k = 0; k <= N; k++) {
+    await evalPosition(k, options.quickMovetime);
+    if (k > 0) classifyOne(k);
+    options.onProgress?.(k, N, "scan");
+  }
+
+  // ---- Pass 2: refine only the moves worth double-checking ----
+  const flaggedPositions = new Set<number>();
+  for (let k = 1; k <= N; k++) {
+    const cls = working[k - 1].classification;
+    if (cls === "mistake" || cls === "blunder" || cls === "miss") {
+      flaggedPositions.add(k - 1);
+      flaggedPositions.add(k);
+    }
+  }
+
+  const toRefine = [...flaggedPositions].sort((a, b) => a - b);
+  for (let i = 0; i < toRefine.length; i++) {
+    const k = toRefine[i];
+    await evalPosition(k, options.refineMovetime);
+    options.onProgress?.(i + 1, toRefine.length, "refine");
+  }
+  // Reclassify every move touched by a refined position, now using the
+  // stronger evals from pass 2.
+  for (let k = 1; k <= N; k++) {
+    if (flaggedPositions.has(k - 1) || flaggedPositions.has(k)) {
+      classifyOne(k);
+    }
   }
 
   return working;
