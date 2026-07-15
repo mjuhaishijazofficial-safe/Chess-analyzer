@@ -43,6 +43,14 @@ export default function HomePage() {
             <div className="mt-8">
               <LoginForm />
             </div>
+
+            <a
+              href="/compare"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent"
+            >
+              Or compare two players
+              <span aria-hidden>→</span>
+            </a>
           </div>
 
           {/* right — HUD player card */}
