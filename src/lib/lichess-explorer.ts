@@ -75,11 +75,9 @@ export async function fetchExplorerStats(
     });
 
     if (!res.ok) {
-      // 404 (unknown position), 429 (rate limited), 5xx — all just mean
-      // "no live data right now", not a hard error for the caller.
+      console.error(`[lichess-explorer] fetch failed: ${res.status} ${res.statusText} for ${path}?${qs.toString()}`);
       return null;
     }
-
     const data = await res.json();
 
     return {
@@ -97,8 +95,8 @@ export async function fetchExplorerStats(
           }))
         : [],
     };
-  } catch {
-    // Network error, timeout, explorer unreachable — degrade quietly.
+  } catch (err) {
+    console.error(`[lichess-explorer] network error for ${path}?${qs.toString()}:`, err);
     return null;
   }
 }
