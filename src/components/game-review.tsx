@@ -9,12 +9,12 @@ import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
 import { MoveList } from "./move-list";
 import { CoachCard } from "./coach-card";
+import { ShareCard, type ShareCardData } from "./share-card";
 import { Engine } from "@/lib/engine";
 import { coachReview, detectMotifs } from "@/lib/coach";
 import { speak, stopSpeaking, isTtsSupported } from "@/lib/tts";
 import { playSoundForSan } from "@/lib/sound";
 import { explainMove, legalTargetsFrom, toUci, type ExploreResult } from "@/lib/explore";
-import { toPng } from "html-to-image";
 import {
   CLASS_META,
   classifyMove,
@@ -39,6 +39,8 @@ interface Props {
   playerColor: "white" | "black";
   result: string | null;
   initialPly?: number;
+  /** Optional — shown as a small badge on the share card when provided. */
+  platform?: "chesscom" | "lichess";
 }
 
 export function GameReview({
@@ -48,6 +50,7 @@ export function GameReview({
   playerColor,
   result,
   initialPly = 0,
+  platform,
 }: Props) {
   const parsed = useMemo(() => parsePgn(pgn), [pgn]);
   const [moves, setMoves] = useState<MoveReview[]>(parsed.moves);
@@ -61,6 +64,7 @@ export function GameReview({
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [voiceOn, setVoiceOn] = useState(true);
   const [ttsSupported, setTtsSupported] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
   useEffect(() => {
     setTtsSupported(isTtsSupported());
   }, []);
@@ -139,35 +143,6 @@ export function GameReview({
     return () => stopSpeaking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exploreResult, exploreLoading, voiceOn]);
-
-  const shareRef = useRef<HTMLDivElement>(null);
-
-const handleShare = async () => {
-  if (!shareRef.current) return;
-  const dataUrl = await toPng(shareRef.current);
-  const link = document.createElement("a");
-  link.download = "chessbuddy-move.png";
-  link.href = dataUrl;
-  link.click();
-};
-
-const handleSavePuzzle = () => {
-  if (!playedMove || !playedMove.bestUci || !playedMove.bestSan) return;
-  savePuzzle({
-    id: `${Date.now()}-${playedMove.ply}`,
-    fen: playedMove.fenBefore,
-    bestMove: playedMove.bestUci,
-    bestMoveSan: playedMove.bestSan,
-    playerMove: playedMove.uci,
-    playerMoveSan: playedMove.san,
-    classification: playedMove.classification ?? "mistake",
-    whiteName,
-    blackName,
-    savedAt: Date.now(),
-  });
-  alert("Puzzle saved! Check My Puzzles page.");
-};
-
 
   const N = parsed.moves.length;
   const myColor = playerColor === "white" ? "w" : "b";
@@ -396,6 +371,29 @@ const res = classifyMove({
 
   const summary = useMemo(() => summarize(moves), [moves]);
 
+  /* ---------------------------- share card ---------------------------- */
+  const shareCardData: ShareCardData = useMemo(() => {
+    const me = playerColor === "white" ? summary.white : summary.black;
+    const opp = playerColor === "white" ? summary.black : summary.white;
+    const myName = playerColor === "white" ? whiteName : blackName;
+    const oppName = playerColor === "white" ? blackName : whiteName;
+
+    let resultLabel = "Game review";
+    if (result === "1-0") resultLabel = playerColor === "white" ? "Won" : "Lost";
+    else if (result === "0-1") resultLabel = playerColor === "white" ? "Lost" : "Won";
+    else if (result) resultLabel = "Draw";
+
+    return {
+      playerName: myName,
+      opponentName: oppName,
+      accuracy: me.accuracy,
+      opponentAccuracy: opp.accuracy,
+      counts: me.counts,
+      resultLabel,
+      platform,
+    };
+  }, [summary, playerColor, whiteName, blackName, result, platform]);
+
   // coach card content
   const isMateEnd = !!playedMove?.san.includes("#");
   const evalBadge =
@@ -593,58 +591,42 @@ const res = classifyMove({
             }
           />
         )}
-      {playedMove?.classification === "brilliant" && (
-  <>
-    <div ref={shareRef} style={{ width: 500, padding: 20, background: "black", color: "white" }}>
-      <h1 style={{ marginBottom: 12 }}>Brilliant Move! {playedMove.san}</h1>
-      <div style={{ width: 460 }}>
-        <Board
-          fen={playedMove.fenAfter}
-          orientation={orientation}
-          lastMove={{ from: playedMove.uci.slice(0, 2), to: playedMove.uci.slice(2, 4) }}
-          arrow={null}
-          checkSquare={null}
-          badge={{ square: playedMove.uci.slice(2, 4), classification: "brilliant" }}
-        />
-      </div>
-      <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.5 }}>
-        {playedMove.coachMessage}
-      </p>
-    </div>
-    <button
-      onClick={handleShare}
-      className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg"
-    >
-      Share this move
-    </button>
-  </>
-)}
 
-{(playedMove?.classification === "mistake" ||
-  playedMove?.classification === "blunder") && (
-  <button
-    onClick={() => {
-      if (!playedMove || !playedMove.bestUci || !playedMove.bestSan) return;
-      savePuzzle({
-        id: `${Date.now()}-${playedMove.ply}`,
-        fen: playedMove.fenBefore,
-        bestMove: playedMove.bestUci,
-        bestMoveSan: playedMove.bestSan,
-        playerMove: playedMove.uci,
-        playerMoveSan: playedMove.san,
-        classification: playedMove.classification ?? "mistake",
-        whiteName,
-        blackName,
-        savedAt: Date.now(),
-      });
-      alert("Puzzle saved! Check My Puzzles page.");
-    }}
-    className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg"
-  >
-    Save as Puzzle
-  </button>
-)}
+        {engineState === "done" && (
+          <button
+            type="button"
+            onClick={() => setShowShareCard(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-panel px-3 py-2.5 text-sm font-medium text-fg transition hover:border-accent/40 hover:text-accent"
+          >
+            <span>📤</span>
+            Share result
+          </button>
+        )}
 
+        {(playedMove?.classification === "mistake" ||
+          playedMove?.classification === "blunder") && (
+          <button
+            onClick={() => {
+              if (!playedMove || !playedMove.bestUci || !playedMove.bestSan) return;
+              savePuzzle({
+                id: `${Date.now()}-${playedMove.ply}`,
+                fen: playedMove.fenBefore,
+                bestMove: playedMove.bestUci,
+                bestMoveSan: playedMove.bestSan,
+                playerMove: playedMove.uci,
+                playerMoveSan: playedMove.san,
+                classification: playedMove.classification ?? "mistake",
+                whiteName,
+                blackName,
+                savedAt: Date.now(),
+              });
+              alert("Puzzle saved! Check My Puzzles page.");
+            }}
+            className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg"
+          >
+            Save as Puzzle
+          </button>
+        )}
 
         {showBest && playedMove && (
           <div className="panel rounded-xl p-3">
@@ -685,6 +667,10 @@ const res = classifyMove({
           summary={summary}
         />
       </div>
+
+      {showShareCard && (
+        <ShareCard data={shareCardData} onClose={() => setShowShareCard(false)} />
+      )}
     </div>
   );
 }
