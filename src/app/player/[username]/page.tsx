@@ -3,11 +3,43 @@ import type { Metadata } from "next";
 import { getPlayerBundle as getChesscomBundle } from "@/lib/chesscom";
 import { getPlayerBundle as getLichessBundle } from "@/lib/lichess";
 import { toChesscomBundle } from "@/lib/lichess-adapter";
-import { toRow } from "@/lib/format";
+import type { PlayerStats } from "@/lib/chesscom";
+import { toRow, TIME_CLASS_META, type GameRow } from "@/lib/format";
 import { ProfileHeader } from "@/components/profile-header";
 import { RatingCards, SectionTitle } from "@/components/rating-cards";
 import { RatingChart } from "@/components/rating-chart";
 import { GamesTable } from "@/components/games-table";
+
+/**
+ * Lichess's public API doesn't expose a per-time-control career W/L/D record
+ * (only an overall count). We approximate it using the recent games we
+ * already fetched, so the rating cards show something real instead of
+ * "No record". Only fills in a record where the adapter left it empty.
+ */
+function attachRecentRecords(
+  stats: PlayerStats | null,
+  rows: GameRow[],
+): PlayerStats | null {
+  if (!stats) return stats;
+
+  const grouped: Record<string, { win: number; draw: number; loss: number }> = {};
+  for (const r of rows) {
+    const key = TIME_CLASS_META[r.timeClass].statKey;
+    grouped[key] ??= { win: 0, draw: 0, loss: 0 };
+    grouped[key][r.outcome]++;
+  }
+
+  const next: PlayerStats = { ...stats };
+  type GameTimeStatKey = "chess_bullet" | "chess_blitz" | "chess_rapid" | "chess_daily";
+  for (const key of Object.keys(grouped)) {
+    const k = key as GameTimeStatKey;
+    const existing = next[k];
+    if (existing && !existing.record) {
+      next[k] = { ...existing, record: grouped[key] };
+    }
+  }
+  return next;
+}
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -42,6 +74,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
 
   const { profile, stats, games } = bundle;
   const rows = games.map((g) => toRow(g, profile.username));
+  const displayStats = isLichess ? attachRecentRecords(stats, rows) : stats;
 
   const tally = rows.reduce(
     (acc, r) => {
@@ -53,7 +86,10 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-8 sm:px-6 sm:py-10">
-      <ProfileHeader profile={profile} />
+      <ProfileHeader
+        profile={profile}
+        platform={isLichess ? "lichess" : "chesscom"}
+      />
 
       {rows.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -68,14 +104,21 @@ export default async function PlayerPage({ params, searchParams }: PageProps) {
         </div>
       )}
 
-      <RatingCards stats={stats} />
+      <RatingCards stats={displayStats} />
+      {isLichess && (
+        <p className="-mt-6 text-xs text-faint">
+          * Lichess win/draw/loss records are based on your last {rows.length}{" "}
+          games — Lichess&apos;s public API doesn&apos;t expose full
+          per-time-control history like Chess.com does.
+        </p>
+      )}
 
       <section>
         <SectionTitle>// rating trend</SectionTitle>
         <RatingChart rows={rows} />
       </section>
 
-      <section>
+      <section id="recent-games">
         <div className="mb-4 flex items-center justify-between">
           <SectionTitle>// recent games</SectionTitle>
           <span className="font-mono text-xs text-faint">
