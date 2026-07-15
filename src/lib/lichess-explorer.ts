@@ -1,174 +1,134 @@
-import type {
-  PlayerProfile,
-  PlayerStats,
-  Game,
-  GameSide,
-  TimeClass,
-} from "./chesscom";
-import type {
-  LichessProfile,
-  LichessGame,
-  LichessPlayerBundle,
-  LichessSpeed,
-} from "./lichess";
+/**
+ * Thin client for the Lichess Opening Explorer public API.
+ * Docs: https://lichess.org/api#tag/Opening-Explorer
+ *
+ * We only use the /masters endpoint (real over-the-board master games),
+ * which needs no API key. Requests run server-side, so no CORS issues.
+ *
+ * The explorer occasionally rate-limits (429) or has outages — every
+ * function here returns null on failure instead of throwing, so callers
+ * (like the opening detail page) can fall back to estimated data.
+ */
 
-/* ------------------------- Profile adapter ------------------------- */
+const EXPLORER_BASE = "https://explorer.lichess.ovh";
 
-export function toChesscomProfile(p: LichessProfile): PlayerProfile {
-  return {
-    player_id: hashToInt(p.id),
-    "@id": p.url,
-    url: p.url,
-    username: p.username,
-    name: undefined,
-    title: p.title,
-    avatar: undefined, // Lichess doesn't expose profile avatars
-    followers: undefined,
-    // countryCode() in format.ts splits on "/" and reads the last 2-letter
-    // segment — a bare ISO code like "US" already satisfies that.
-    country: p.profile?.country,
-    location: p.profile?.location,
-    last_online: Math.floor(p.seenAt / 1000),
-    joined: Math.floor(p.createdAt / 1000),
-    status: p.online ? "online" : undefined,
-    is_streamer: false,
-    verified: false,
-    league: undefined,
-  };
-}
-
-/* -------------------------- Stats adapter --------------------------- */
-
-type GameTimeStatKey = "chess_bullet" | "chess_blitz" | "chess_rapid" | "chess_daily";
-
-const PERF_TO_STAT_KEY: Record<string, GameTimeStatKey> = {
-  bullet: "chess_bullet",
-  blitz: "chess_blitz",
-  rapid: "chess_rapid",
-  classical: "chess_daily", // closest fit — chesscom has no "classical" bucket
-  correspondence: "chess_daily",
+const HEADERS: HeadersInit = {
+  "User-Agent": "chessbuddy/1.0 (Next.js analytics demo; +https://github.com/chessbuddy)",
+  Accept: "application/json",
 };
 
-export function toChesscomStats(p: LichessProfile): PlayerStats {
-  const stats: PlayerStats = {};
-  for (const [perf, statKey] of Object.entries(PERF_TO_STAT_KEY)) {
-    const entry = p.perfs[perf as keyof typeof p.perfs];
-    if (!entry) continue;
-    // Don't overwrite classical with a worse correspondence rating
-    if (stats[statKey]) continue;
-    stats[statKey] = {
-      last: { rating: entry.rating },
-      best: { rating: entry.rating }, // Lichess doesn't expose a per-perf peak
-      record: undefined, // Lichess only gives an overall W/L/D, not per time-control
+export type ExplorerSource = "masters" | "lichess";
+
+export interface ExplorerGameRef {
+  id: string;
+  winner?: "white" | "black";
+  white: { name: string; rating: number };
+  black: { name: string; rating: number };
+  year?: number;
+}
+
+export interface ExplorerMove {
+  uci: string;
+  san: string;
+  white: number;
+  draws: number;
+  black: number;
+  averageRating?: number;
+}
+
+export interface ExplorerStats {
+  white: number;
+  draws: number;
+  black: number;
+  moves: ExplorerMove[];
+  topGames: ExplorerGameRef[];
+}
+
+export interface FetchExplorerOptions {
+  source?: ExplorerSource;
+  topGames?: number; // how many top games to request (0-15)
+  play?: string[]; // extra UCI moves to play from fen, if needed
+}
+
+/**
+ * Fetch aggregate stats (white/draws/black + top games) for a position.
+ * Returns null if the position isn't found, the request fails, or the
+ * explorer is rate-limiting/down — never throws.
+ */
+export async function fetchExplorerStats(
+  fen: string,
+  opts: FetchExplorerOptions = {},
+): Promise<ExplorerStats | null> {
+  const { source = "masters", topGames = 0, play } = opts;
+
+  const qs = new URLSearchParams({ fen });
+  if (play && play.length > 0) qs.set("play", play.join(","));
+  if (topGames > 0) qs.set("topGames", String(Math.min(topGames, 15)));
+
+  const path = source === "masters" ? "/masters" : "/lichess";
+
+  try {
+    const res = await fetch(`${EXPLORER_BASE}${path}?${qs.toString()}`, {
+      headers: HEADERS,
+      // Opening stats for a fixed position barely change — cache for a day.
+      next: { revalidate: 86400 },
+    });
+
+    if (!res.ok) {
+      // 404 (unknown position), 429 (rate limited), 5xx — all just mean
+      // "no live data right now", not a hard error for the caller.
+      return null;
+    }
+
+    const data = await res.json();
+
+    return {
+      white: data.white ?? 0,
+      draws: data.draws ?? 0,
+      black: data.black ?? 0,
+      moves: Array.isArray(data.moves) ? data.moves : [],
+      topGames: Array.isArray(data.topGames)
+        ? data.topGames.map((g: ExplorerTopGameRaw) => ({
+            id: g.id,
+            winner: g.winner,
+            white: { name: g.white?.name ?? "Unknown", rating: g.white?.rating ?? 0 },
+            black: { name: g.black?.name ?? "Unknown", rating: g.black?.rating ?? 0 },
+            year: g.year,
+          }))
+        : [],
     };
-  }
-  return stats;
-}
-
-/* --------------------------- Games adapter --------------------------- */
-
-const SPEED_TO_TIME_CLASS: Record<LichessSpeed, TimeClass> = {
-  ultraBullet: "bullet",
-  bullet: "bullet",
-  blitz: "blitz",
-  rapid: "rapid",
-  classical: "rapid",
-  correspondence: "daily",
-};
-
-/** Maps a Lichess game's outcome to the same per-side result vocabulary
- * chess.com uses ("win", "checkmated", "resigned", "timeout", "agreed", …)
- * so the existing outcomeFromResult()/resultLabel() helpers work unchanged. */
-function perSideResult(
-  game: LichessGame,
-  side: "white" | "black",
-): string {
-  const won = game.winner === side;
-  const lost = game.winner && game.winner !== side;
-
-  switch (game.status) {
-    case "mate":
-      return won ? "win" : "checkmated";
-    case "resign":
-      return won ? "win" : "resigned";
-    case "timeout":
-    case "outoftime":
-      return won ? "win" : "timeout";
-    case "stalemate":
-      return "stalemate";
-    case "draw":
-      return "agreed";
-    case "aborted":
-    case "noStart":
-      return "abandoned";
-    default:
-      if (won) return "win";
-      if (lost) return "resigned";
-      return "agreed";
+  } catch {
+    // Network error, timeout, explorer unreachable — degrade quietly.
+    return null;
   }
 }
 
-function toGameSide(
-  game: LichessGame,
-  side: "white" | "black",
-): GameSide {
-  const player = game.players[side];
-  return {
-    rating: player.rating ?? 0,
-    result: perSideResult(game, side),
-    "@id": "",
-    username: player.user?.name ?? "Anonymous",
-    uuid: undefined,
-  };
+/** Raw shape of a topGames/recentGames entry as returned by the API. */
+interface ExplorerTopGameRaw {
+  id: string;
+  winner?: "white" | "black";
+  white?: { name: string; rating: number };
+  black?: { name: string; rating: number };
+  year?: number;
 }
 
-/** Converts a single Lichess game — used by the game-review page. */
-export function toChesscomGame(game: LichessGame): Game {
-  return toChesscomGames([game])[0];
+export interface ExplorerPercentages {
+  whitePct: number;
+  drawPct: number;
+  blackPct: number;
+  totalGames: number;
 }
 
-export function toChesscomGames(games: LichessGame[]): Game[] {
-  return games.map((g) => ({
-    url: `https://lichess.org/${g.id}`,
-    uuid: g.id,
-    pgn: g.pgn,
-    time_control: "600", // Lichess games list doesn't include clock times by default
-    end_time: Math.floor(g.lastMoveAt / 1000),
-    rated: g.rated,
-    time_class: SPEED_TO_TIME_CLASS[g.speed] ?? "rapid",
-    rules: g.variant === "standard" ? "chess" : g.variant,
-    fen: undefined,
-    white: toGameSide(g, "white"),
-    black: toGameSide(g, "black"),
-    accuracies: undefined,
-    eco: g.opening?.name ?? g.opening?.eco,
-  }));
-}
-
-/* ------------------------------ Bundle ------------------------------- */
-
-export interface AdaptedPlayerBundle {
-  profile: PlayerProfile;
-  stats: PlayerStats | null;
-  games: Game[];
-}
-
-export function toChesscomBundle(
-  bundle: LichessPlayerBundle,
-): AdaptedPlayerBundle {
-  return {
-    profile: toChesscomProfile(bundle.profile),
-    stats: toChesscomStats(bundle.profile),
-    games: toChesscomGames(bundle.games),
-  };
-}
-
-/* ------------------------------ helpers ------------------------------ */
-
-function hashToInt(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+/** Converts raw white/draws/black counts into rounded percentages. */
+export function explorerPercentages(
+  stats: ExplorerStats,
+): ExplorerPercentages {
+  const total = stats.white + stats.draws + stats.black;
+  if (total === 0) {
+    return { whitePct: 0, drawPct: 0, blackPct: 0, totalGames: 0 };
   }
-  return Math.abs(h);
+  const whitePct = Math.round((stats.white / total) * 100);
+  const drawPct = Math.round((stats.draws / total) * 100);
+  const blackPct = 100 - whitePct - drawPct;
+  return { whitePct, drawPct, blackPct, totalGames: total };
 }
