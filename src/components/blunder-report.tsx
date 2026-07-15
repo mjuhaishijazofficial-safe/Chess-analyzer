@@ -6,7 +6,7 @@ import { analyzeGameMoves } from "@/lib/analyze-game";
 import { aggregateBlunders, type BlunderReport, type Phase } from "@/lib/blunder-stats";
 import { GameReview } from "@/components/game-review";
 
-const GAME_LIMIT = 3;
+const GAME_LIMIT = 5;
 
 interface GameApiRow {
   uuid: string | null;
@@ -19,6 +19,7 @@ interface GameApiRow {
 }
 
 type Status = "idle" | "loading-games" | "analyzing" | "done" | "error";
+type Stage = "scan" | "refine";
 
 const PHASE_LABEL: Record<Phase, string> = {
   opening: "Opening",
@@ -30,7 +31,13 @@ export function BlunderReportCard() {
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState({ game: 0, totalGames: 0 });
+  const [progress, setProgress] = useState({
+    game: 0,
+    totalGames: 0,
+    stage: "scan" as Stage,
+    stageDone: 0,
+    stageTotal: 0,
+  });
   const [report, setReport] = useState<BlunderReport | null>(null);
   const [games, setGames] = useState<GameApiRow[]>([]);
   const [cleanUsername, setCleanUsername] = useState("");
@@ -62,11 +69,15 @@ export function BlunderReportCard() {
       setGames(fetchedGames);
 
       setStatus("analyzing");
-      setProgress({ game: 0, totalGames: fetchedGames.length });
+      setProgress({ game: 0, totalGames: fetchedGames.length, stage: "scan", stageDone: 0, stageTotal: 0 });
 
       const engine = new Engine();
       await engine.whenReady;
-      const movetime = engine.multiThreaded ? 250 : 450;
+      // Pass 1 is a quick scan of every position; pass 2 only re-checks the
+      // handful of moves the scan flagged, so it can afford a much deeper
+      // search without blowing up total analysis time.
+      const quickMovetime = engine.multiThreaded ? 90 : 150;
+      const refineMovetime = engine.multiThreaded ? 500 : 900;
 
       const analyzed: { url: string; playerColor: "w" | "b"; moves: Awaited<ReturnType<typeof analyzeGameMoves>> }[] = [];
 
@@ -74,9 +85,15 @@ export function BlunderReportCard() {
         if (cancelRef.current) return;
         const g = fetchedGames[i];
         const playerColor: "w" | "b" = g.white.toLowerCase() === clean ? "w" : "b";
-        const moves = await analyzeGameMoves(g.pgn, engine, movetime);
+        const moves = await analyzeGameMoves(g.pgn, engine, {
+          quickMovetime,
+          refineMovetime,
+          onProgress: (done, total, stage) => {
+            setProgress({ game: i + 1, totalGames: fetchedGames.length, stage, stageDone: done, stageTotal: total });
+          },
+        });
         analyzed.push({ url: g.url, playerColor, moves });
-        setProgress({ game: i + 1, totalGames: fetchedGames.length });
+        setProgress((p) => ({ ...p, game: i + 1 }));
       }
 
       engine.destroy?.();
@@ -96,7 +113,8 @@ export function BlunderReportCard() {
         <div className="mb-1 text-sm font-medium text-fg">Blunder pattern report</div>
         <p className="mb-4 text-sm text-muted">
           Analyzes your last {GAME_LIMIT} games move-by-move and shows which phase of the game — opening,
-          middlegame, or endgame — your mistakes and blunders actually happen in.
+          middlegame, or endgame — your mistakes and blunders actually happen in. Every move gets a quick
+          scan first, then anything that looks like a mistake or blunder gets a much deeper second look.
         </p>
 
         <form onSubmit={run} className="flex gap-2">
@@ -124,9 +142,27 @@ export function BlunderReportCard() {
         )}
 
         {status === "analyzing" && (
-          <p className="mt-4 text-sm text-muted">
-            Analyzing game {progress.game} of {progress.totalGames} with Stockfish… this can take a minute.
-          </p>
+          <div className="mt-4">
+            <p className="text-sm text-muted">
+              Game {progress.game} of {progress.totalGames} —{" "}
+              {progress.stage === "scan"
+                ? `scanning move ${progress.stageDone} of ${progress.stageTotal}…`
+                : progress.stageTotal > 0
+                  ? `double-checking risky move ${progress.stageDone} of ${progress.stageTotal}…`
+                  : "no risky moves to double-check, moving on…"}
+            </p>
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-panel-2">
+              <div
+                className="h-full rounded-full bg-accent/70 transition-all"
+                style={{
+                  width:
+                    progress.stageTotal > 0
+                      ? `${Math.round((progress.stageDone / progress.stageTotal) * 100)}%`
+                      : "100%",
+                }}
+              />
+            </div>
+          </div>
         )}
 
         {status === "error" && error && (
