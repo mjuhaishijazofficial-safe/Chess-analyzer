@@ -4,6 +4,7 @@
 // Dedicated Opening Explorer landing page: search bar, Quick Categories,
 // then Popular Openings. Clicking a category filters the list shown below.
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { OpeningSearch } from "@/components/opening-search";
@@ -39,7 +40,13 @@ const SECTION_LABEL_STYLE = {
   textAlign: "left" as const,
 };
 
-export default function OpeningsPage() {
+/**
+ * Next.js requires any component that calls useSearchParams() to be wrapped
+ * in a <Suspense> boundary — otherwise the page can't be statically
+ * prerendered and `next build` fails. The default export below just
+ * provides that boundary; all the real logic lives in here.
+ */
+function OpeningsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categorySlug = searchParams.get("category");
@@ -172,5 +179,20 @@ export default function OpeningsPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function OpeningsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main
+          style={{ minHeight: "100vh", background: colors.bg }}
+          aria-busy="true"
+        />
+      }
+    >
+      <OpeningsPageContent />
+    </Suspense>
   );
 }
