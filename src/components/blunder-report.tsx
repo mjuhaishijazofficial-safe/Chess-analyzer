@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { Engine } from "@/lib/engine";
 import { analyzeGameMoves } from "@/lib/analyze-game";
-import { aggregateBlunders, type BlunderReport, type Phase } from "@/lib/blunder-stats";
+import { aggregateBlunders, type BlunderReport, type BlunderSample, type Phase } from "@/lib/blunder-stats";
+import { savePuzzle } from "@/lib/puzzle-store";
 import { GameReview } from "@/components/game-review";
 
 const GAME_LIMIT = 3;
@@ -27,6 +28,10 @@ const PHASE_LABEL: Record<Phase, string> = {
   endgame: "Endgame",
 };
 
+function sampleKey(s: BlunderSample) {
+  return `${s.gameIndex}-${s.ply}`;
+}
+
 export function BlunderReportCard() {
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -42,6 +47,7 @@ export function BlunderReportCard() {
   const [games, setGames] = useState<GameApiRow[]>([]);
   const [cleanUsername, setCleanUsername] = useState("");
   const [selected, setSelected] = useState<{ gameIndex: number; ply: number } | null>(null);
+  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
   const cancelRef = useRef(false);
 
   async function run(e: React.FormEvent) {
@@ -54,6 +60,7 @@ export function BlunderReportCard() {
     setError(null);
     setReport(null);
     setSelected(null);
+    setSavedKeys(new Set());
     setCleanUsername(clean);
 
     try {
@@ -105,7 +112,35 @@ export function BlunderReportCard() {
     }
   }
 
+  function saveSample(s: BlunderSample) {
+    if (!s.bestUci || !s.bestSan) return;
+    const game = games[s.gameIndex];
+    if (!game) return;
+    savePuzzle({
+      id: `blunder-${cleanUsername}-${sampleKey(s)}`,
+      fen: s.fen,
+      bestMove: s.bestUci,
+      bestMoveSan: s.bestSan,
+      playerMove: s.playerUci,
+      playerMoveSan: s.san,
+      classification: s.winDrop >= 20 ? "blunder" : "mistake",
+      whiteName: game.white,
+      blackName: game.black,
+      savedAt: Date.now(),
+    });
+    setSavedKeys((prev) => new Set(prev).add(sampleKey(s)));
+  }
+
+  function saveAll() {
+    if (!report) return;
+    for (const s of report.samples) {
+      if (!savedKeys.has(sampleKey(s)) && s.bestUci) saveSample(s);
+    }
+  }
+
   const busy = status === "loading-games" || status === "analyzing";
+  const saveableSamples = report?.samples.filter((s) => !!s.bestUci) ?? [];
+  const unsavedCount = saveableSamples.filter((s) => !savedKeys.has(sampleKey(s))).length;
 
   return (
     <div className="rounded-xl border border-line bg-panel p-5">
@@ -115,6 +150,11 @@ export function BlunderReportCard() {
           Analyzes your last {GAME_LIMIT} games move-by-move and shows which phase of the game — opening,
           middlegame, or endgame — your mistakes and blunders actually happen in. Every move gets a quick
           scan first, then anything that looks like a mistake or blunder gets a much deeper second look.
+          Turn any of them into a puzzle to drill later on the{" "}
+          <a href="/puzzles" className="text-accent underline underline-offset-2">
+            My Puzzles
+          </a>{" "}
+          page.
         </p>
 
         <form onSubmit={run} className="flex gap-2">
@@ -192,25 +232,58 @@ export function BlunderReportCard() {
 
             {report.samples.length > 0 && (
               <div className="mt-5">
-                <div className="mb-2 text-xs text-muted">Worst moves found — click one to open the full review</div>
-                <div className="flex flex-col gap-1.5">
-                  {report.samples.map((s, i) => (
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-xs text-muted">Worst moves found — click one to open the full review</div>
+                  {saveableSamples.length > 0 && (
                     <button
-                      key={i}
-                      onClick={() => setSelected({ gameIndex: s.gameIndex, ply: s.ply })}
-                      className={`flex items-center justify-between rounded-lg border px-3 py-1.5 text-left text-xs transition ${
-                        selected?.gameIndex === s.gameIndex && selected.ply === s.ply
-                          ? "border-accent text-accent"
-                          : "border-line text-muted hover:border-line-strong hover:text-fg"
-                      }`}
+                      onClick={saveAll}
+                      disabled={unsavedCount === 0}
+                      className="rounded-lg border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent transition hover:bg-accent/15 disabled:cursor-default disabled:opacity-50"
                     >
-                      <span>
-                        {s.moveNo}. {s.san}
-                        {s.bestSan ? ` (best was ${s.bestSan})` : ""} — {PHASE_LABEL[s.phase]}
-                      </span>
-                      <span className="text-rose">-{Math.round(s.winDrop)}cp</span>
+                      {unsavedCount === 0 ? "All saved ✓" : `Save all ${unsavedCount} as puzzles`}
                     </button>
-                  ))}
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {report.samples.map((s, i) => {
+                    const key = sampleKey(s);
+                    const isSaved = savedKeys.has(key);
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition ${
+                          selected?.gameIndex === s.gameIndex && selected.ply === s.ply
+                            ? "border-accent text-accent"
+                            : "border-line text-muted"
+                        }`}
+                      >
+                        <button
+                          onClick={() => setSelected({ gameIndex: s.gameIndex, ply: s.ply })}
+                          className="flex flex-1 items-center justify-between text-left hover:text-fg"
+                        >
+                          <span>
+                            {s.moveNo}. {s.san}
+                            {s.bestSan ? ` (best was ${s.bestSan})` : ""} — {PHASE_LABEL[s.phase]}
+                          </span>
+                          <span className="ml-2 shrink-0 text-rose">-{Math.round(s.winDrop)}cp</span>
+                        </button>
+                        {s.bestUci && (
+                          <button
+                            onClick={() => saveSample(s)}
+                            disabled={isSaved}
+                            title={isSaved ? "Saved to My Puzzles" : "Save as puzzle"}
+                            className={`shrink-0 rounded-md px-2 py-1 font-medium transition ${
+                              isSaved
+                                ? "bg-accent/15 text-accent"
+                                : "bg-panel-2 text-muted hover:text-fg"
+                            }`}
+                          >
+                            {isSaved ? "✓ Saved" : "+ Puzzle"}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
