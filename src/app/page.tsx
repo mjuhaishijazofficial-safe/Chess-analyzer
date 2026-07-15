@@ -25,7 +25,7 @@ export default function HomePage() {
             
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/[0.06] px-3 py-1 font-mono text-xs text-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
-              ONLINE · CONNECTED TO CHESS.COM
+              ONLINE · CHESS.COM + LICHESS
             </div>
 
             <h1 className="mt-6 text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
@@ -34,8 +34,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-6 max-w-lg text-pretty text-base leading-relaxed text-muted sm:text-lg">
-              Drop your Chess.com username and instantly unlock your stats,
-              ratings and full game history — then run a{" "}
+              Drop your Chess.com or Lichess username and instantly unlock
+              your stats, ratings and full game history — then run a{" "}
               <span className="text-fg">Stockfish game review</span> on any match,
               move by move.
             </p>
@@ -71,7 +71,7 @@ export default function HomePage() {
           <Feature
             icon="🎯"
             title="Your profile"
-            body="Avatar, title, country, league, followers and join date — your full identity card, straight from Chess.com."
+            body="Avatar, title, country, league, followers and join date — your full identity card, straight from Chess.com or Lichess."
           />
           <Feature
             icon="📊"
@@ -99,12 +99,12 @@ export default function HomePage() {
             <Step
               n="01"
               title="Enter your username"
-              body="No password, no OAuth dance. Chess.com publishes this data openly — your username is the only key."
+              body="No password, no OAuth dance. Chess.com and Lichess both publish this data openly — your username is the only key."
             />
             <Step
               n="02"
               title="We pull your data"
-              body="ChessBuddy calls the official Chess.com public API and assembles your profile, stats and games in seconds."
+              body="ChessBuddy calls the official public API of whichever platform you pick and assembles your profile, stats and games in seconds."
             />
             <Step
               n="03"
@@ -113,9 +113,10 @@ export default function HomePage() {
             />
           </div>
           <p className="mt-8 max-w-2xl text-xs leading-relaxed text-faint">
-            Chess.com&apos;s OAuth program is invite-only, so &quot;login&quot;
-            here means identifying yourself by your public username — only data
-            already visible on your Chess.com profile is ever shown.
+            Chess.com&apos;s OAuth program is invite-only and Lichess games are
+            public by default, so &quot;login&quot; here means identifying
+            yourself by your public username — only data already visible on
+            your profile is ever shown.
           </p>
         </div>
       </section>
