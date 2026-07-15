@@ -50,7 +50,7 @@ export default function HomePage() {
             <div className="mb-3 flex justify-end">
               <a
                 href="/compare"
-                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel/80 px-3 py-1.5 text-xs font-medium text-muted backdrop-blur transition hover:border-accent/40 hover:text-accent"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent"
               >
                 ⚖️ Compare two players
                 <span aria-hidden>→</span>
