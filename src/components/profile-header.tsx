@@ -7,8 +7,15 @@ import {
   timeAgo,
 } from "@/lib/format";
 
-export function ProfileHeader({ profile }: { profile: PlayerProfile }) {
+export function ProfileHeader({
+  profile,
+  platform = "chesscom",
+}: {
+  profile: PlayerProfile;
+  platform?: "chesscom" | "lichess";
+}) {
   const code = countryCode(profile);
+  const siteName = platform === "lichess" ? "Lichess" : "Chess.com";
   const online =
     profile.last_online && Date.now() / 1000 - profile.last_online < 600;
 
@@ -83,7 +90,7 @@ export function ProfileHeader({ profile }: { profile: PlayerProfile }) {
             rel="noreferrer"
             className="rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm text-fg transition hover:border-line-strong"
           >
-            View on Chess.com ↗
+            View on {siteName} ↗
           </a>
         </div>
       </div>
