@@ -147,6 +147,23 @@ export function GameReview({
   const N = parsed.moves.length;
   const myColor = playerColor === "white" ? "w" : "b";
 
+  /* -------------------- deep refinement of current position ---------------------
+   * The main scan below is intentionally fast (short movetime per position) so
+   * the whole game reviews quickly. Once that's done, we separately run a
+   * much deeper (depth 20) search on just the ONE position the person is
+   * currently looking at — this is what Lichess/chess.com's own analysis
+   * boards do too. It updates the best-move arrow and eval with a more
+   * precise number without slowing down the initial pass. */
+  interface DeepInfo {
+    ply: number;
+    depth: number;
+    cpWhite: number;
+    bestUci: string | null;
+  }
+  const [deepInfo, setDeepInfo] = useState<DeepInfo | null>(null);
+  const [deepening, setDeepening] = useState(false);
+  const deepEngineRef = useRef<Engine | null>(null);
+
   /* ------------------------- engine analysis ------------------------ */
   useEffect(() => {
     if (parsed.error || N === 0) {
@@ -301,6 +318,53 @@ const res = classifyMove({
     };
   }, [parsed, N, myColor]);
 
+  /* current position for deep refinement — computed early so the effect
+   * below can depend on it (declared again further down for rendering). */
+  const currentFenForDeepen =
+    ply === 0 ? parsed.startFen : moves[Math.min(ply, moves.length) - 1]?.fenAfter;
+
+  useEffect(() => {
+    if (engineState !== "done" || !currentFenForDeepen) return;
+    let cancelled = false;
+    setDeepening(true);
+
+    async function run() {
+      if (!deepEngineRef.current) deepEngineRef.current = new Engine();
+      const engine = deepEngineRef.current;
+      try {
+        await engine.whenReady;
+        if (cancelled) return;
+        const ev = await engine.analyze(currentFenForDeepen!, { depth: 20 });
+        if (cancelled) return;
+        const whiteToMove = currentFenForDeepen!.split(" ")[1] === "w";
+        const stm = cpStm(ev.lines[0]);
+        setDeepInfo({
+          ply,
+          depth: ev.depth,
+          cpWhite: whiteToMove ? stm : -stm,
+          bestUci: ev.bestMove ?? ev.lines[0]?.move ?? null,
+        });
+      } catch {
+        /* leave whatever the fast scan already produced */
+      } finally {
+        if (!cancelled) setDeepening(false);
+      }
+    }
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ply, currentFenForDeepen, engineState]);
+
+  useEffect(() => {
+    return () => {
+      deepEngineRef.current?.destroy();
+      deepEngineRef.current = null;
+    };
+  }, []);
+
   /* --------------------------- navigation --------------------------- */
   const go = useCallback(
     (p: number) => {
@@ -355,11 +419,13 @@ const res = classifyMove({
   }, [ply]);
 
   const forwardMove = moves[ply] ?? null;
-  const forwardBest = forwardMove?.bestUci ?? null;
+  const deepMatchesPly = deepInfo?.ply === ply;
+  const forwardBest = (deepMatchesPly ? deepInfo?.bestUci : null) ?? forwardMove?.bestUci ?? null;
   const arrow =
     showArrows && forwardBest
       ? { from: forwardBest.slice(0, 2), to: forwardBest.slice(2, 4) }
       : null;
+  const displayEvalWhite = deepMatchesPly && deepInfo ? deepInfo.cpWhite : evalWhite;
 
   const badge =
     playedMove?.analyzed && playedMove.classification
@@ -402,9 +468,9 @@ const res = classifyMove({
         ? formatEvalShort(startEval)
         : null
       : isMateEnd
-        ? (result ?? formatEvalShort(evalWhite ?? 0))
-        : evalWhite != null
-          ? formatEvalShort(evalWhite)
+        ? (result ?? formatEvalShort(displayEvalWhite ?? 0))
+        : displayEvalWhite != null
+          ? formatEvalShort(displayEvalWhite)
           : null;
 
   const thinking =
@@ -460,7 +526,7 @@ const res = classifyMove({
         />
         <div className="my-2 flex items-stretch gap-3">
           <div className="w-6 shrink-0 sm:w-7">
-            <EvalBar cpWhite={evalWhite} orientation={orientation} />
+            <EvalBar cpWhite={displayEvalWhite} orientation={orientation} />
           </div>
           <div className="min-w-0 flex-1">
             <Board
@@ -593,6 +659,22 @@ const res = classifyMove({
         )}
 
         {engineState === "done" && (
+          <div className="flex items-center gap-1.5 px-1 font-mono text-[11px] text-faint">
+            {deepening && !deepMatchesPly ? (
+              <>
+                <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent" />
+                refining this position to depth 20…
+              </>
+            ) : deepMatchesPly && deepInfo ? (
+              <>
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                verified at depth {deepInfo.depth}
+              </>
+            ) : null}
+          </div>
+        )}
+
+        {engineState === "done" && (
           <button
             type="button"
             onClick={() => setShowShareCard(true)}
@@ -616,9 +698,9 @@ const res = classifyMove({
                 playerMove: playedMove.uci,
                 playerMoveSan: playedMove.san,
                 classification: playedMove.classification ?? "mistake",
+                userColor: playedMove.fenBefore.split(" ")[1] as "w" | "b",
                 whiteName,
                 blackName,
-                userColor: myColor,
                 savedAt: Date.now(),
               });
               alert("Puzzle saved! Check My Puzzles page.");
