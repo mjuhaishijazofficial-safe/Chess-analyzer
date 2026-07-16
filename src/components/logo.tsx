@@ -17,7 +17,8 @@ export function Logo({
       </span>
       {!compact && (
         <span className="font-mono text-[15px] font-semibold tracking-tight text-fg">
-          chess<span className="text-accent">buddy</span>
+          chess<span className="text-accent">deeper
+</span>
         </span>
       )}
     </Link>

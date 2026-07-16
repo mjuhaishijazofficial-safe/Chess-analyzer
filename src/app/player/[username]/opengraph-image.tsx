@@ -100,7 +100,8 @@ export default async function PlayerOpengraphImage({ params }: Props) {
             ♞
           </div>
           <div style={{ display: "flex", fontSize: 34, fontWeight: 800, color: "#e9edf1" }}>
-            chess<span style={{ color: "#4ade80" }}>buddy</span>
+            chess<span style={{ color: "#4ade80" }}>deeper
+</span>
           </div>
         </div>
 

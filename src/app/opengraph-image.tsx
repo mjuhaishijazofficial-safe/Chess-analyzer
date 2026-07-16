@@ -79,7 +79,8 @@ export default function OpengraphImage() {
           }}
         >
           chess
-          <span style={{ color: "#4ade80" }}>buddy</span>
+          <span style={{ color: "#4ade80" }}>deeper
+</span>
         </div>
 
         <div
