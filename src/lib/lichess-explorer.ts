@@ -65,10 +65,18 @@ export async function fetchExplorerStats(
 
   try {
     const res = await fetch(`${EXPLORER_BASE}/${source}?${params.toString()}`, {
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "chessbuddy/1.0 (Next.js analytics demo; +https://github.com/chessbuddy)",
+      },
       next: { revalidate: 3600 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Lichess's Opening Explorer now requires authentication for most
+      // requests (as of early 2026) — a 401 here is expected, not a bug.
+      // We fall back to the estimated data already built into the page.
+      return null;
+    }
 
     const data: RawExplorerResponse = await res.json();
     return {
@@ -83,8 +91,7 @@ export async function fetchExplorerStats(
         year: g.year,
       })),
     };
-  } catch (err) {
-    console.error("[lichess-explorer] fetch failed:", err);
+  } catch {
     return null;
   }
 }

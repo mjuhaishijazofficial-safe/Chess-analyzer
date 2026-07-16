@@ -47,7 +47,14 @@ export default function HomePage() {
 
           {/* right — HUD player card */}
           <div className="animate-rise [animation-delay:120ms]">
-            <div className="mb-3 flex justify-end">
+            <div className="mb-3 flex flex-wrap justify-end gap-2">
+              <a
+                href="/journey"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent"
+              >
+                📜 My Chess Journey
+                <span aria-hidden>→</span>
+              </a>
               <a
                 href="/compare"
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent"

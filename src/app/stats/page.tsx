@@ -13,13 +13,22 @@ export default function StatsPage() {
             Deeper analysis beyond your dashboard overview, powered by the same Stockfish engine as Game Review.
           </p>
         </div>
-        <Link
-          href="/compare"
-          className="ring-focus inline-flex shrink-0 items-center gap-2.5 rounded-xl bg-accent px-6 py-3.5 text-base font-bold text-black transition hover:brightness-110"
-        >
-          ⚖️ Compare two players
-          <span aria-hidden>→</span>
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/journey"
+            className="ring-focus inline-flex shrink-0 items-center gap-2.5 rounded-xl bg-accent px-6 py-3.5 text-base font-bold text-black transition hover:brightness-110"
+          >
+            📜 My Chess Journey
+            <span aria-hidden>→</span>
+          </Link>
+          <Link
+            href="/compare"
+            className="ring-focus inline-flex shrink-0 items-center gap-2.5 rounded-xl border border-line bg-panel px-6 py-3.5 text-base font-bold text-fg transition hover:border-line-strong"
+          >
+            ⚖️ Compare two players
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
       </div>
 
       <BlunderReportCard />
