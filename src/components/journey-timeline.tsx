@@ -173,7 +173,8 @@ export function JourneyTimeline({
           <div className="mb-2 flex items-center justify-center gap-2">
             <span className="text-2xl">♞</span>
             <span className="font-mono text-sm font-bold tracking-wide text-fg">
-              chess<span className="text-accent">buddy</span>
+              chess<span className="text-accent">deeper
+</span>
             </span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">

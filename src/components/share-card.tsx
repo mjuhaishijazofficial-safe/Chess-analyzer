@@ -73,7 +73,8 @@ export function ShareCard({
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
             <span style={{ fontSize: 20 }}>♞</span>
             <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: 0.3 }}>
-              chess<span style={{ color: "#4ade80" }}>buddy</span>
+              chess<span style={{ color: "#4ade80" }}>deeper
+</span>
             </span>
             {data.platform && (
               <span
