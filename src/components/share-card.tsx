@@ -32,7 +32,7 @@ export function ShareCard({
     try {
       const dataUrl = await toPng(ref.current, { pixelRatio: 2 });
       const link = document.createElement("a");
-      link.download = `chessbuddy-${data.playerName.toLowerCase().replace(/\s+/g, "-")}.png`;
+      link.download = `chessdeeper-${data.playerName.toLowerCase().replace(/\s+/g, "-")}.png`;
       link.href = dataUrl;
       link.click();
     } catch {

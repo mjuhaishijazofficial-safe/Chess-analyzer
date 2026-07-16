@@ -13,7 +13,7 @@ export interface Puzzle {
   savedAt: number;
 }
 
-const STORAGE_KEY = "chessbuddy-puzzles";
+const STORAGE_KEY = "chessdeeper-puzzles";
 
 export function getPuzzles(): Puzzle[] {
   if (typeof window === "undefined") return [];

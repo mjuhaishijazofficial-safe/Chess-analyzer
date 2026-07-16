@@ -17,7 +17,7 @@ export const BOARD_THEMES: BoardTheme[] = [
 
 export type BoardThemeName = (typeof BOARD_THEMES)[number]["name"];
 
-const STORAGE_KEY = "chessbuddy-board-theme";
+const STORAGE_KEY = "chessdeeper-board-theme";
 const DEFAULT_THEME = BOARD_THEMES[0];
 
 export function getBoardTheme(): BoardTheme {

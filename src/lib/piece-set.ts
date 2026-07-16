@@ -11,7 +11,7 @@ export const PIECE_SETS = [
 
 export type PieceSet = (typeof PIECE_SETS)[number];
 
-const STORAGE_KEY = "chessbuddy-piece-set";
+const STORAGE_KEY = "chessdeeper-piece-set";
 
 export function getPieceSet(): PieceSet {
   if (typeof window === "undefined") return "cburnett";

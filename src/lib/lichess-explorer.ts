@@ -67,7 +67,7 @@ export async function fetchExplorerStats(
     const res = await fetch(`${EXPLORER_BASE}/${source}?${params.toString()}`, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "chessbuddy/1.0 (Next.js analytics demo; +https://github.com/chessbuddy)",
+        "User-Agent": "chessdeeper/1.0 (Next.js analytics demo; +https://github.com/chessdeeper)",
       },
       next: { revalidate: 3600 },
     });

@@ -129,7 +129,7 @@ export function JourneyTimeline({
     try {
       const dataUrl = await toPng(captureRef.current, { pixelRatio: 2, backgroundColor: "#0b0e13" });
       const link = document.createElement("a");
-      link.download = `chessbuddy-journey-${username.toLowerCase()}.png`;
+      link.download = `chessdeeper-journey-${username.toLowerCase()}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -318,7 +318,7 @@ export function JourneyTimeline({
         </div>
 
         <div className="mt-6 text-center font-mono text-[11px] text-faint">
-          chessbuddy.app/journey · {siteName}
+          chessdeeper.app/journey · {siteName}
         </div>
       </div>
     </div>

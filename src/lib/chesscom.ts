@@ -11,7 +11,7 @@
 const BASE = "https://api.chess.com/pub";
 
 const COMMON_HEADERS: HeadersInit = {
-  "User-Agent": "chessbuddy/1.0 (Next.js analytics demo; +https://github.com/chessbuddy)",
+  "User-Agent": "chessdeeper/1.0 (Next.js analytics demo; +https://github.com/chessdeeper)",
   Accept: "application/json",
 };
 

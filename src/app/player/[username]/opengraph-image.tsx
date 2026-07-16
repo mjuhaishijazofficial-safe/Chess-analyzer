@@ -145,7 +145,7 @@ export default async function PlayerOpengraphImage({ params }: Props) {
         )}
 
         <div style={{ display: "flex", marginTop: 28, fontSize: 24, color: "#9aa4b2" }}>
-          {siteName} · chessbuddy
+          {siteName} · chessdeeper
         </div>
       </div>
     ),

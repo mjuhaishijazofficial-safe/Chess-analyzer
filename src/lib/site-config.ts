@@ -5,4 +5,4 @@
  * falls back to a placeholder so local dev still works.
  */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://chessbuddy.local";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://chessdeeper.local";

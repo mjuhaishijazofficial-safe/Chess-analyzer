@@ -31,7 +31,7 @@ export const ANALYSIS_DEPTHS: {
   },
 ];
 
-const STORAGE_KEY = "chessbuddy-analysis-depth";
+const STORAGE_KEY = "chessdeeper-analysis-depth";
 
 export function getAnalysisDepth(): AnalysisDepth {
   if (typeof window === "undefined") return "balanced";

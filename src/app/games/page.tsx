@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/components/login-form";
 
-const RECENT_KEY = "chessbuddy:recent";
+const RECENT_KEY = "chessdeeper:recent";
 
 type Platform = "chesscom" | "lichess";
 interface RecentEntry {

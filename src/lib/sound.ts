@@ -8,7 +8,7 @@
  * philosophy (same idea as the hand-built SVG board and rating chart).
  */
 
-const STORAGE_KEY = "chessbuddy-sound-enabled";
+const STORAGE_KEY = "chessdeeper-sound-enabled";
 
 let ctx: AudioContext | null = null;
 let noiseBuffer: AudioBuffer | null = null;

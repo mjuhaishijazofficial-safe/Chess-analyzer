@@ -46,7 +46,7 @@ export function SinceLastVisit({
   const [prev, setPrev] = useState<Snapshot | null | undefined>(undefined);
 
   useEffect(() => {
-    const key = `chessbuddy:snapshot:${platform}:${username.toLowerCase()}`;
+    const key = `chessdeeper:snapshot:${platform}:${username.toLowerCase()}`;
     let previous: Snapshot | null = null;
     try {
       const raw = localStorage.getItem(key);
