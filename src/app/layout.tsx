@@ -18,14 +18,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ChessBuddy — Chess.com analytics",
-    template: "%s · ChessBuddy",
+    default: "ChessDeeper — Chess.com analytics",
+    template: "%s · ChessDeeper",
   },
   description:
     "Connect your Chess.com account and explore your profile, ratings, records and recent games in a clean analytics dashboard.",
   metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: "ChessBuddy — Chess.com analytics",
+    title: "ChessDeeper — Chess.com analytics",
     description:
       "Profile, ratings, records and recent games — powered by the Chess.com public API.",
     type: "website",

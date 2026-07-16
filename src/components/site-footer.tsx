@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div className="space-y-3">
           <Logo />
           <p className="max-w-md text-sm leading-relaxed text-muted">
-            A reader for the Chess.com public API. ChessBuddy is an independent
+            A reader for the Chess.com public API. ChessDeeper is an independent
             project and is not affiliated with or endorsed by Chess.com.
           </p>
         </div>
@@ -36,7 +36,7 @@ export function SiteFooter() {
             Terms of Use
           </Link>
           <span className="text-faint">
-            © {new Date().getFullYear()} ChessBuddy
+            © {new Date().getFullYear()} ChessDeeper
           </span>
         </div>
       </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
-  description: "Terms for using ChessBuddy.",
+  description: "Terms for using ChessDeeper.",
 };
 
 export default function TermsPage() {
@@ -20,9 +20,9 @@ export default function TermsPage() {
       </div>
 
       <section className="mt-8 space-y-3">
-        <h2 className="text-xl font-semibold text-fg">1. What ChessBuddy is</h2>
+        <h2 className="text-xl font-semibold text-fg">1. What ChessDeeper is</h2>
         <p className="leading-relaxed text-muted">
-          ChessBuddy is an independent tool that displays publicly available
+          ChessDeeper is an independent tool that displays publicly available
           Chess.com data (profiles, ratings, and games) alongside
           engine-assisted game review and puzzles. It is not affiliated
           with, endorsed by, or officially connected to Chess.com in any way.
@@ -32,7 +32,7 @@ export default function TermsPage() {
       <section className="mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-fg">2. Acceptable use</h2>
         <p className="leading-relaxed text-muted">
-          Please don&apos;t use ChessBuddy to abuse, scrape at scale, or
+          Please don&apos;t use ChessDeeper to abuse, scrape at scale, or
           circumvent rate limits on this site or on Chess.com&apos;s API.
           Don&apos;t attempt to disrupt the service, reverse-engineer it to
           harm others, or use it for anything unlawful.
@@ -44,7 +44,7 @@ export default function TermsPage() {
           3. No warranty — provided &quot;as is&quot;
         </h2>
         <p className="leading-relaxed text-muted">
-          ChessBuddy is provided &quot;as is&quot; and &quot;as
+          ChessDeeper is provided &quot;as is&quot; and &quot;as
           available,&quot; without warranties of any kind. Engine
           evaluations, move classifications, and opening names are
           generated automatically and may occasionally be inaccurate — they
@@ -70,7 +70,7 @@ export default function TermsPage() {
           5. Limitation of liability
         </h2>
         <p className="leading-relaxed text-muted">
-          To the fullest extent permitted by law, ChessBuddy and its
+          To the fullest extent permitted by law, ChessDeeper and its
           creators aren&apos;t liable for any indirect, incidental, or
           consequential damages arising from your use of the site.
         </p>
@@ -80,7 +80,7 @@ export default function TermsPage() {
         <h2 className="text-xl font-semibold text-fg">6. Changes</h2>
         <p className="leading-relaxed text-muted">
           These terms may be updated from time to time. Continued use of
-          ChessBuddy after changes means you accept the updated terms.
+          ChessDeeper after changes means you accept the updated terms.
         </p>
       </section>
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-# ♞ ChessBuddy
+# ♞ ChessDeeper
 
 ### Your Chess.com stats, ratings, and games — analyzed by a real chess engine, right in your browser.
 
@@ -19,17 +19,17 @@
 
 ## 📖 About The Project
 
-**ChessBuddy** is a modern, dark-themed analytics dashboard for [Chess.com](https://www.chess.com) players. Type in any public Chess.com username and instantly get a clean, terminal-styled breakdown of your profile, ratings, win/loss history, and recent games — no login, no OAuth, no API key required.
+**ChessDeeper** is a modern, dark-themed analytics dashboard for [Chess.com](https://www.chess.com) players. Type in any public Chess.com username and instantly get a clean, terminal-styled breakdown of your profile, ratings, win/loss history, and recent games — no login, no OAuth, no API key required.
 
-What makes ChessBuddy different from a typical stats tracker is its **built-in Game Review engine**: every game can be opened and analyzed move-by-move by **Stockfish 18 (NNUE)**, running entirely inside your browser. Every move gets classified (Brilliant, Best, Inaccuracy, Blunder, etc.), explained in plain English by an automated "coach," and scored for accuracy — the same experience you'd expect from Chess.com's own analysis board, but free, open-source, and self-hosted.
+What makes ChessDeeper different from a typical stats tracker is its **built-in Game Review engine**: every game can be opened and analyzed move-by-move by **Stockfish 18 (NNUE)**, running entirely inside your browser. Every move gets classified (Brilliant, Best, Inaccuracy, Blunder, etc.), explained in plain English by an automated "coach," and scored for accuracy — the same experience you'd expect from Chess.com's own analysis board, but free, open-source, and self-hosted.
 
-> ChessBuddy is an independent project and is **not affiliated with or endorsed by Chess.com**.
+> ChessDeeper is an independent project and is **not affiliated with or endorsed by Chess.com**.
 
 ---
 
 ## ✨ Features
 
-- 🔐 **Username-based login** — enter any Chess.com username; ChessBuddy verifies it against the live Published-Data API before opening the dashboard.
+- 🔐 **Username-based login** — enter any Chess.com username; ChessDeeper verifies it against the live Published-Data API before opening the dashboard.
 - 🧑‍💻 **Profile card** — avatar, title, country flag, league, followers, join date, and online status.
 - 📊 **Ratings overview** — bullet / blitz / rapid / daily ratings, peak highs, W-D-L records, and win-rate bars.
 - 📈 **Rating trend chart** — interactive, hand-built SVG line chart from real game history, switchable per time control, with hover tooltips.
@@ -67,7 +67,7 @@ What makes ChessBuddy different from a typical stats tracker is its **built-in G
 
 <div align="center">
 
-![ChessBuddy demo GIF](docs/screenshots/demo.gif)
+![ChessDeeper demo GIF](docs/screenshots/demo.gif)
 
 </div>
 
@@ -184,6 +184,6 @@ This project is licensed under the MIT License.
 
 <div align="center">
 
-ChessBuddy is an independent project and is **not affiliated with or endorsed by Chess.com**.
+ChessDeeper is an independent project and is **not affiliated with or endorsed by Chess.com**.
 
 </div>

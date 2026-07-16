@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How ChessBuddy handles data.",
+  description: "How ChessDeeper handles data.",
 };
 
 export default function PrivacyPage() {
@@ -23,11 +23,11 @@ export default function PrivacyPage() {
       <section className="mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-fg">What this app does</h2>
         <p className="leading-relaxed text-muted">
-          ChessBuddy is a reader for the public Chess.com API. You type in a
+          ChessDeeper is a reader for the public Chess.com API. You type in a
           Chess.com username, and the app fetches that player&apos;s public
           profile, stats, and game history directly from Chess.com to
           display it back to you. There is no account creation, sign-up, or
-          login on ChessBuddy itself.
+          login on ChessDeeper itself.
         </p>
       </section>
 
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
           >
             Published-Data API
           </a>{" "}
-          to retrieve publicly available profile and game data. ChessBuddy
+          to retrieve publicly available profile and game data. ChessDeeper
           does not send your IP address, browser details, or any other
           personal information to Chess.com beyond what a normal API request
           requires. See{" "}
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
           What&apos;s stored on our servers
         </h2>
         <p className="leading-relaxed text-muted">
-          Nothing personal. ChessBuddy has no database and no user accounts.
+          Nothing personal. ChessDeeper has no database and no user accounts.
           Chess.com responses are cached briefly (a few minutes) purely to
           reduce repeat requests and speed up the app — this cache isn&apos;t
           tied to you individually and expires automatically.
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
           Cookies &amp; analytics
         </h2>
         <p className="leading-relaxed text-muted">
-          ChessBuddy does not currently use cookies, tracking pixels, or
+          ChessDeeper does not currently use cookies, tracking pixels, or
           third-party analytics. If that changes in the future, this policy
           will be updated to say so before it happens.
         </p>
@@ -101,7 +101,7 @@ export default function PrivacyPage() {
       <section className="mt-8 space-y-3">
         <h2 className="text-xl font-semibold text-fg">Children&apos;s privacy</h2>
         <p className="leading-relaxed text-muted">
-          ChessBuddy is not directed at children under 13 and does not
+          ChessDeeper is not directed at children under 13 and does not
           knowingly collect personal information from them.
         </p>
       </section>

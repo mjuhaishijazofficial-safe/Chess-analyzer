@@ -16,7 +16,7 @@ export default function GlobalError({
             ⚠
           </div>
           <h1 className="mt-6 text-2xl font-semibold tracking-tight">
-            ChessBuddy hit a snag
+            ChessDeeper hit a snag
           </h1>
           <p className="mt-2 text-pretty text-muted">
             Something went wrong loading the app itself. Please try

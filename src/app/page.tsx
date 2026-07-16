@@ -120,7 +120,7 @@ export default function HomePage() {
             <Step
               n="02"
               title="We pull your data"
-              body="ChessBuddy calls the official public API of whichever platform you pick and assembles your profile, stats and games in seconds."
+              body="ChessDeeper calls the official public API of whichever platform you pick and assembles your profile, stats and games in seconds."
             />
             <Step
               n="03"
