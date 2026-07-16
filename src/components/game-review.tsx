@@ -618,6 +618,7 @@ const res = classifyMove({
                 classification: playedMove.classification ?? "mistake",
                 whiteName,
                 blackName,
+                userColor: myColor,
                 savedAt: Date.now(),
               });
               alert("Puzzle saved! Check My Puzzles page.");

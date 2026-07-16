@@ -222,6 +222,18 @@ export default function PuzzlesPage() {
         Puzzle {current + 1} of {puzzles.length} — play any move, Stockfish judges each one.
       </p>
 
+      <p className="mb-3 text-sm text-muted">
+        You were playing{" "}
+        <span className="font-medium text-fg">
+          {puzzle.userColor === "w" ? "White" : "Black"}
+        </span>{" "}
+        against{" "}
+        <span className="font-medium text-fg">
+          {puzzle.userColor === "w" ? puzzle.blackName : puzzle.whiteName}
+        </span>
+        .
+      </p>
+
       <div className="mb-2 flex justify-end">
         <button
           onClick={() => setOrientation((o) => (o === "white" ? "black" : "white"))}

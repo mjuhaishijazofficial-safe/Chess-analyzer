@@ -23,7 +23,7 @@ export async function GET(
     const games = await getRecentGames(clean, limit);
     return NextResponse.json({
       ok: true,
-      games: games
+   games: games
         .filter((g) => !!g.pgn)
         .map((g) => ({
           uuid: g.uuid ?? null,
@@ -33,6 +33,7 @@ export async function GET(
           end_time: g.end_time,
           white: g.white.username,
           black: g.black.username,
+          eco: g.eco ?? null,
         })),
     });
   } catch (err) {

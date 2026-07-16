@@ -8,6 +8,8 @@ export interface Puzzle {
   classification: string;
   whiteName: string;
   blackName: string;
+  /** Which side the puzzle-saver was playing in the original game. */
+  userColor: "w" | "b";
   savedAt: number;
 }
 

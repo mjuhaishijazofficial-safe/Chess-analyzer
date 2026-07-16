@@ -17,6 +17,7 @@ interface GameApiRow {
   end_time: number;
   white: string;
   black: string;
+  eco: string | null;
 }
 
 type Status = "idle" | "loading-games" | "analyzing" | "done" | "error";
@@ -86,7 +87,7 @@ export function BlunderReportCard() {
       const quickMovetime = engine.multiThreaded ? 90 : 150;
       const refineMovetime = engine.multiThreaded ? 500 : 900;
 
-      const analyzed: { url: string; playerColor: "w" | "b"; moves: Awaited<ReturnType<typeof analyzeGameMoves>> }[] = [];
+     const analyzed: { url: string; playerColor: "w" | "b"; moves: Awaited<ReturnType<typeof analyzeGameMoves>>; eco?: string | null }[] = [];
 
       for (let i = 0; i < fetchedGames.length; i++) {
         if (cancelRef.current) return;
@@ -99,7 +100,8 @@ export function BlunderReportCard() {
             setProgress({ game: i + 1, totalGames: fetchedGames.length, stage, stageDone: done, stageTotal: total });
           },
         });
-        analyzed.push({ url: g.url, playerColor, moves });
+        analyzed.push({ url: g.url, playerColor, moves, eco: g.eco });
+        
         setProgress((p) => ({ ...p, game: i + 1 }));
       }
 
@@ -112,11 +114,14 @@ export function BlunderReportCard() {
     }
   }
 
-  function saveSample(s: BlunderSample) {
+function saveSample(s: BlunderSample) {
     if (!s.bestUci || !s.bestSan) return;
     const game = games[s.gameIndex];
     if (!game) return;
+    const userColor: "w" | "b" =
+      game.white.toLowerCase() === cleanUsername ? "w" : "b";
     savePuzzle({
+
       id: `blunder-${cleanUsername}-${sampleKey(s)}`,
       fen: s.fen,
       bestMove: s.bestUci,
@@ -126,6 +131,8 @@ export function BlunderReportCard() {
       classification: s.winDrop >= 20 ? "blunder" : "mistake",
       whiteName: game.white,
       blackName: game.black,
+
+    userColor,
       savedAt: Date.now(),
     });
     setSavedKeys((prev) => new Set(prev).add(sampleKey(s)));
@@ -229,6 +236,27 @@ export function BlunderReportCard() {
                 );
               })}
             </div>
+
+           {report.byOpening.length > 0 && (
+              <div className="mt-5">
+                <div className="mb-2 text-xs text-muted">
+                  Recurring — same mistake type showed up more than once in these openings
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {report.byOpening.map((o) => (
+                    <div
+                      key={o.label}
+                      className="flex items-center justify-between rounded-lg border border-line bg-bg px-3 py-2 text-xs"
+                    >
+                      <span className="text-fg">{o.label}</span>
+                      <span className="text-faint">
+                        {o.total}× ({o.blunders} blunder{o.blunders === 1 ? "" : "s"}, {o.mistakes} mistake{o.mistakes === 1 ? "" : "s"})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {report.samples.length > 0 && (
               <div className="mt-5">
