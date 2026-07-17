@@ -1,6 +1,7 @@
 
 import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
+import { FloatingPieceParticles } from "@/components/floating-piece-particles";
 import { getProfile, getStats } from "@/lib/chesscom";
 
 export default function HomePage() {
@@ -16,7 +17,7 @@ export default function HomePage() {
         <div className="pointer-events-none absolute -right-40 top-40 h-[420px] w-[420px] rounded-full bg-[radial-gradient(closest-side,rgba(34,211,238,0.14),transparent)]" />
 
         {/* floating pieces */}
-        <FloatingPieces />
+        <FloatingPieceParticles />
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
           {/* left */}
@@ -182,25 +183,6 @@ function Step({ n, title, body }: { n: string; title: string; body: string }) {
       <div className="font-mono text-2xl font-bold text-accent/80">{n}</div>
       <h3 className="mt-2 text-base font-semibold text-fg">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
-    </div>
-  );
-}
-
-function FloatingPieces() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <span className="absolute left-[6%] top-[18%] animate-float text-7xl text-accent/10">
-        ♞
-      </span>
-      <span className="absolute right-[10%] top-[12%] animate-float-slow text-6xl text-cyan/10">
-        ♛
-      </span>
-      <span className="absolute bottom-[14%] left-[14%] animate-float-slow text-6xl text-cyan/10">
-        ♚
-      </span>
-      <span className="absolute bottom-[22%] right-[44%] animate-float text-5xl text-accent/10">
-        ♜
-      </span>
     </div>
   );
 }
