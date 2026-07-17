@@ -2,6 +2,7 @@
 
 import { bookPlies, matchOpeningName } from "@/lib/opening-book";
 import { savePuzzle } from "@/lib/puzzle-store";
+import { getAnalysisDepth, reviewMovetimeFor, puzzleMovetimeFor } from "@/lib/analysis-depth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Chess } from "chess.js";
@@ -181,7 +182,7 @@ export function GameReview({
     engine.whenReady
       .then(async () => {
         if (cancelled) return;
-        const movetime = engine.multiThreaded ? 300 : 600;
+        const movetime = reviewMovetimeFor(getAnalysisDepth(), engine.multiThreaded);
         setEngineInfo({
           multiThreaded: engine.multiThreaded,
           threads: engine.threads,
@@ -334,7 +335,8 @@ const res = classifyMove({
       try {
         await engine.whenReady;
         if (cancelled) return;
-        const ev = await engine.analyze(currentFenForDeepen!, { depth: 20 });
+        const movetime = puzzleMovetimeFor(getAnalysisDepth(), engine.multiThreaded);
+        const ev = await engine.analyze(currentFenForDeepen!, { movetime, depth: 22 });
         if (cancelled) return;
         const whiteToMove = currentFenForDeepen!.split(" ")[1] === "w";
         const stm = cpStm(ev.lines[0]);

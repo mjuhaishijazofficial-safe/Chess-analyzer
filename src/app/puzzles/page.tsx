@@ -7,6 +7,7 @@ import { getPuzzles, deletePuzzle, type Puzzle } from "@/lib/puzzle-store";
 import { Engine } from "@/lib/engine";
 import { classifyMove, material, cpStm, CLASS_META, type Classification } from "@/lib/chess-review";
 import { playSoundForSan } from "@/lib/sound";
+import { getAnalysisDepth, puzzleMovetimeFor } from "@/lib/analysis-depth";
 
 interface Base {
   bestUci: string;
@@ -37,7 +38,8 @@ export default function PuzzlesPage() {
 
   async function analyzePosition(fen: string): Promise<Base> {
     const engine = engineRef.current!;
-    const ev = await engine.analyze(fen, { movetime: engine.multiThreaded ? 1200 : 2000 });
+    const movetime = puzzleMovetimeFor(getAnalysisDepth(), engine.multiThreaded);
+    const ev = await engine.analyze(fen, { movetime, depth: 22 });
     const c = new Chess(fen);
     return {
       bestUci: ev.bestMove ?? ev.lines[0]?.move ?? "",
