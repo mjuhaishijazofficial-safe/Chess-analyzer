@@ -73,7 +73,7 @@ function IconSettings() {
   );
 }
 
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Overview", icon: <IconOverview /> },
   { href: "/stats", label: "Stats", icon: <IconStats /> },
   { href: "/games", label: "Games", icon: <IconGames /> },
