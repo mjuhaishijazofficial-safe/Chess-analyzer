@@ -46,7 +46,7 @@ export function MobileNav() {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <nav className="relative z-10 flex h-full w-[78vw] max-w-72 flex-col gap-0.5 border-r border-line bg-panel px-3 py-4 shadow-2xl">
+          <nav className="relative z-10 flex h-full w-[78vw] max-w-72 flex-col gap-0.5 border-r border-line bg-[#0d1015] px-3 py-4 shadow-2xl">
             <div className="mb-4 flex items-center justify-between px-1.5">
               <Logo />
               <button
