@@ -11,6 +11,12 @@ import {
   playCaptureSound,
   playCheckSound,
 } from "@/lib/sound";
+import {
+  getAnalysisDepth,
+  setAnalysisDepth,
+  ANALYSIS_DEPTHS,
+  type AnalysisDepth,
+} from "@/lib/analysis-depth";
 
 const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -18,11 +24,13 @@ export default function SettingsPage() {
   const [selected, setSelected] = useState<PieceSet>("cburnett");
   const [boardSelected, setBoardSelected] = useState<BoardThemeName>("slate");
   const [soundOn, setSoundOn] = useState(true);
+  const [speed, setSpeed] = useState<AnalysisDepth>("balanced");
 
   useEffect(() => {
     setSelected(getPieceSet());
     setBoardSelected(getBoardTheme().name);
     setSoundOn(isSoundEnabled());
+    setSpeed(getAnalysisDepth());
   }, []);
 
   const previewTheme = BOARD_THEMES.find((t) => t.name === boardSelected) ?? BOARD_THEMES[0];
@@ -42,6 +50,11 @@ export default function SettingsPage() {
     setSoundEnabled(next);
     setSoundOn(next);
     if (next) playMoveSound();
+  }
+
+  function chooseSpeed(next: AnalysisDepth) {
+    setAnalysisDepth(next);
+    setSpeed(next);
   }
 
   return (
@@ -141,6 +154,33 @@ export default function SettingsPage() {
               </button>
             </div>
           )}
+
+          <h1 className="mb-2 mt-12 text-2xl font-bold text-fg">Analysis Speed</h1>
+          <p className="mb-6 text-sm text-muted">
+            How long Stockfish thinks per position in Game Review and Puzzles.
+            Balanced is fast enough for everyday review; Deep is slower but stronger.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {ANALYSIS_DEPTHS.map((d) => (
+              <button
+                key={d.value}
+                onClick={() => chooseSpeed(d.value)}
+                className={`rounded-xl border p-4 text-left transition ${
+                  speed === d.value
+                    ? "border-accent bg-accent/10"
+                    : "border-line bg-panel hover:border-line-strong"
+                }`}
+              >
+                <p className="text-sm font-semibold text-fg">
+                  {d.label}
+                  {d.value === "balanced" && (
+                    <span className="ml-2 text-xs font-normal text-muted">Default</span>
+                  )}
+                </p>
+                <p className="mt-1 text-sm text-muted">{d.blurb}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* live preview */}

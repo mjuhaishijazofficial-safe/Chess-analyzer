@@ -259,7 +259,16 @@ export class Engine {
     this.curDepth = 0;
     const { depth, movetime } = this.current.opts;
     this.post(`position fen ${this.current.fen}`);
-    this.post(movetime ? `go movetime ${movetime}` : `go depth ${depth ?? 14}`);
+    if (movetime && depth) {
+      // Stockfish stops at whichever limit it hits first, so this gives us
+      // a time budget with a depth ceiling (in case a shallow/quiet
+      // position would otherwise burn the full movetime for no gain).
+      this.post(`go depth ${depth} movetime ${movetime}`);
+    } else if (movetime) {
+      this.post(`go movetime ${movetime}`);
+    } else {
+      this.post(`go depth ${depth ?? 14}`);
+    }
     this.searchTimer = setTimeout(() => {
       this.post("stop");
       this.finish(this.lines.get(1)?.move ?? null);
