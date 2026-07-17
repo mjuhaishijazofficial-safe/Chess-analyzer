@@ -1,0 +1,58 @@
+diff --git a/src/components/game-review.tsx b/src/components/game-review.tsx
+index edffe27..fffc939 100644
+--- a/src/components/game-review.tsx
++++ b/src/components/game-review.tsx
+@@ -179,6 +179,14 @@ export function GameReview({
+     const posBest: (string | null)[] = [];
+     const posPv: string[][] = [];
+ 
++    // How many plies of this game match known opening theory. Moves in
++    // this range are classified "book" regardless of engine eval (see
++    // classifyMove), so we skip the engine call for them entirely — the
++    // one exception is the very last book position, which still needs a
++    // real eval because it's the "before" benchmark for the first
++    // out-of-book move's classification.
++    const gameBookPlies = bookPlies(working.map((m) => m.san));
++
+     engine.whenReady
+       .then(async () => {
+         if (cancelled) return;
+@@ -195,6 +203,7 @@ export function GameReview({
+           if (cancelled) return;
+           const fen = k === 0 ? parsed.startFen : working[k - 1].fenAfter;
+           const whiteToMove = fen.split(" ")[1] === "w";
++          const inBook = k < gameBookPlies;
+ 
+           const probe = new Chess(fen);
+           let stm = 0;
+@@ -205,6 +214,8 @@ export function GameReview({
+             stm = -100000;
+           } else if (probe.isStalemate() || probe.isDraw()) {
+             stm = 0;
++          } else if (inBook) {
++            // Known theory — no engine call, no depth update.
+           } else {
+             const ev = await engine.analyze(fen, { movetime });
+             if (cancelled) return;
+@@ -248,8 +259,7 @@ export function GameReview({
+             }
+             const sacrifice = matBefore - matAfter;
+ 
+-           const sanSoFar = working.slice(0, k).map((m) => m.san);
+-const bookMatchPlies = bookPlies(sanSoFar);
++           const bookMatchPlies = Math.min(k, gameBookPlies);
+ 
+ const res = classifyMove({
+   ply: mv.ply,
+@@ -299,7 +309,10 @@ const res = classifyMove({
+             mv.bestLineSan = pvToSan(mv.fenBefore, posPv[k - 1], 6);
+             mv.classification = cls;
+             mv.winDrop = res.winDrop;
+-            mv.accuracy = res.accuracy;
++            // Book moves skipped the engine, so cpl/accuracy here is
++            // meaningless noise — exclude from the accuracy average
++            // (summarize() only sums moves with accuracy != null).
++            mv.accuracy = cls === "book" ? null : res.accuracy;
+             mv.coachTitle = coach.title;
+             mv.coachMessage = coach.message;
+             mv.analyzed = true;
