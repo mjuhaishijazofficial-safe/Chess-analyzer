@@ -1,0 +1,16 @@
+diff --git a/next.config.ts b/next.config.ts
+index 276f6ba..2055201 100644
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -19,7 +19,10 @@ const CSP = [
+   "default-src 'self'",
+   // React's dev-mode debugging features (call-stack reconstruction, Fast
+   // Refresh) need eval() — never used by React in production builds.
+-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
++  // 'wasm-unsafe-eval' lets WebAssembly.instantiate/instantiateStreaming
++  // compile modules (needed for Stockfish's .wasm) without opening up full
++  // JS eval() in production. 'unsafe-eval' is dev-only (React Fast Refresh).
++  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
+   "style-src 'self' 'unsafe-inline'",
+   "img-src 'self' data: https:",
+   "font-src 'self' data:",
