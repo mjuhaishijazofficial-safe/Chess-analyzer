@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./logo";
+import { MobileNav } from "./mobile-nav";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
+        <MobileNav />
         <Logo compact className="md:hidden" />
 
         <div className="ml-auto flex items-center gap-3">
