@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
 import { RegisterServiceWorker } from "@/components/register-sw";
+import { GoogleTranslateInit } from "@/components/google-translate-init";
 import { SITE_URL } from "@/lib/site-config";
 
 const geistSans = Geist({
@@ -56,6 +57,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex bg-bg text-fg">
         <RegisterServiceWorker />
+        <GoogleTranslateInit />
         <SiteSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <SiteHeader />

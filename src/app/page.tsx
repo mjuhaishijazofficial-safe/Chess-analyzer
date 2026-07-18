@@ -2,11 +2,14 @@
 import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
 import { FloatingPieceParticles } from "@/components/floating-piece-particles";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { getProfile, getStats } from "@/lib/chesscom";
 
 export default function HomePage() {
   return (
     <>
+      <LanguageSwitcher />
+
       {/* ================================================================ */}
       {/* HERO                                                             */}
       {/* ================================================================ */}
