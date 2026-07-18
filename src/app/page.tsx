@@ -1,15 +1,12 @@
-
 import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
 import { FloatingPieceParticles } from "@/components/floating-piece-particles";
-import { LanguageSwitcher } from "@/components/language-switcher";
+
 import { getProfile, getStats } from "@/lib/chesscom";
 
 export default function HomePage() {
   return (
     <>
-      <LanguageSwitcher />
-
       {/* ================================================================ */}
       {/* HERO                                                             */}
       {/* ================================================================ */}
@@ -25,8 +22,6 @@ export default function HomePage() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
           {/* left */}
           <div className="animate-rise">
-            
-            
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/[0.06] px-3 py-1 font-mono text-xs text-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
               ONLINE · CHESS.COM + LICHESS
@@ -51,16 +46,16 @@ export default function HomePage() {
 
           {/* right — HUD player card */}
           <div className="animate-rise [animation-delay:120ms]">
-            <div className="mb-3 flex flex-wrap justify-end gap-2">
-              <a
-                href="/journey"
+       <div className="mb-3 flex flex-wrap justify-end gap-2">
+              
+                <a href="/journey"
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent"
               >
                 📜 My Chess Journey
                 <span aria-hidden>→</span>
               </a>
-              <a
-                href="/compare"
+              
+                <a href="/compare"
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent"
               >
                 ⚖️ Compare two players
@@ -189,7 +184,6 @@ function Step({ n, title, body }: { n: string; title: string; body: string }) {
     </div>
   );
 }
-
 
 /** Fetches only profile + stats (no game history) — kept light so this card streams in fast. */
 async function fetchPlayerRatings(username: string) {
