@@ -249,4 +249,28 @@
   .glow-btn:active {
     transform: translateY(0);
   }
+
+  /* ---- suppress Google Translate's default banner/UI — we drive
+     translation through our own dropdown in LanguageSwitcher ---- */
+  .goog-te-banner-frame,
+  .goog-te-balloon-frame,
+  .goog-tooltip,
+  .goog-te-gadget-icon,
+  .skiptranslate {
+    display: none !important;
+  }
+  iframe.goog-te-banner-frame,
+  iframe.skiptranslate {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+  }
+  body {
+    top: 0 !important;
+    position: static !important;
+  }
+  .goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+  }
 }

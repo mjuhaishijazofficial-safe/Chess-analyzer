@@ -22,11 +22,14 @@ const CSP = [
   // 'wasm-unsafe-eval' lets WebAssembly.instantiate/instantiateStreaming
   // compile modules (needed for Stockfish's .wasm) without opening up full
   // JS eval() in production. 'unsafe-eval' is dev-only (React Fast Refresh).
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
+  // translate.google.com/translate.googleapis.com/translate-pa.googleapis.com/
+  // www.gstatic.com are the Google Translate widget (language switcher).
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline' https://www.gstatic.com",
   "img-src 'self' data: https:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
+  "font-src 'self' data: https://www.gstatic.com",
+  "connect-src 'self' https://translate.googleapis.com https://translate-pa.googleapis.com",
+  "frame-src 'self' https://translate.google.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
