@@ -50,20 +50,20 @@ function IconPuzzles() {
   );
 }
 
-function IconBlog() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
-      <path d="M4 4h9l3 3v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M6.5 8.5h7M6.5 11.5h7M6.5 14.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function IconOpenings() {
   return (
     <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
       <path d="M4 4.5h5.5a1.5 1.5 0 0 1 1.5 1.5v9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M16 4.5h-5.5A1.5 1.5 0 0 0 9 6v9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconBlog() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
+      <path d="M4 4h9l3 3v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M6.5 8.5h7M6.5 11.5h7M6.5 14.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -87,7 +87,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/stats", label: "Stats", icon: <IconStats /> },
   { href: "/games", label: "Games", icon: <IconGames /> },
   { href: "/puzzles", label: "Puzzles", icon: <IconPuzzles /> },
- { href: "/openings", label: "Openings", icon: <IconOpenings /> },
+  { href: "/openings", label: "Openings", icon: <IconOpenings /> },
   { href: "/blog", label: "Blog", icon: <IconBlog /> },
   { href: "/settings", label: "Settings", icon: <IconSettings /> },
 ];
@@ -123,7 +123,6 @@ export function SiteSidebar() {
 
       <div className="flex flex-col gap-0.5 border-t border-line pt-3">
         <a
-
           href="https://www.chess.com/news/view/published-data-api"
           target="_blank"
           rel="noreferrer"
@@ -132,7 +131,6 @@ export function SiteSidebar() {
           API
         </a>
         <a
-
           href="https://github.com"
           target="_blank"
           rel="noreferrer"
