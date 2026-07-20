@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+﻿import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
 
 import { getProfile, getStats } from "@/lib/chesscom";
