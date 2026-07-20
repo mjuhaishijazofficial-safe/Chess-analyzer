@@ -1,0 +1,49 @@
+{
+  "Home": {
+    "onlineBadge": "ONLINE - CHESS.COM + LICHESS",
+    "titleLine1": "SATRANCINI",
+    "titleLine2": "GELISTIR",
+    "description": "Chess.com veya Lichess kullanici adini gir ve istatistiklerine, derecelendirmelerine ve tum oyun gecmisine aninda eris - sonra herhangi bir mac icin hamle hamle <stockfish>Stockfish oyun incelemesi</stockfish> baslat.",
+    "journeyLink": "Satranc Yolculugum",
+    "compareLink": "Iki oyuncuyu karsilastir",
+    "statTimeControls": "Zaman kontrolleri",
+    "statGames": "Arsivinizdeki oyunlar",
+    "statDepth": "Motor inceleme derinligi",
+    "featureProfileTitle": "Profiliniz",
+    "featureProfileBody": "Avatar, unvan, ulke, lig, takipciler ve katilim tarihi.",
+    "featureRatingsTitle": "Derecelendirmeler ve rekorlar",
+    "featureRatingsBody": "Bullet, blitz, hizli ve gunluk derecelendirmeler, tarihsel zirveleriyle.",
+    "featureReviewTitle": "Motor oyun incelemesi",
+    "featureReviewBody": "Herhangi bir oyunu adim adim incele. Her hamle En Iyi'den Hata'ya kadar degerlendirilir.",
+    "howItWorksTitle": "// nasil calisir",
+    "step1Title": "Kullanici adinizi girin",
+    "step1Body": "Sifre yok, OAuth yok.",
+    "step2Title": "Verilerinizi getiriyoruz",
+    "step2Body": "ChessDeeper resmi genel API'yi kullanir.",
+    "step3Title": "Tekrar izle",
+    "step3Body": "Panonuzu kesfedin ve herhangi bir oyunu tekrar izleyin."
+  },
+  "LanguageSwitcher": {
+    "label": "Dil"
+  },
+  "Sidebar": {
+    "overview": "Genel bakis",
+    "stats": "Istatistikler",
+    "games": "Oyunlar",
+    "puzzles": "Bulmacalar",
+    "openings": "Acilislar",
+    "blog": "Blog",
+    "settings": "Ayarlar",
+    "compare": "Oyunculari karsilastir",
+    "journey": "Satranc Yolculugum",
+    "openMenu": "Menuyu ac",
+    "closeMenu": "Menuyu kapat"
+  },
+  "Footer": {
+    "description": "Chess.com genel API'si icin bir okuyucu. ChessDeeper bagimsiz bir projedir ve Chess.com ile bagli ya da onayli degildir.",
+    "publishedDataApi": "Published-Data API",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "Gizlilik Politikasi",
+    "termsOfUse": "Kullanim Sartlari"
+  }
+}
