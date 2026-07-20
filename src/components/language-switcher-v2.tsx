@@ -14,6 +14,7 @@ const LANGUAGES: { value: Locale; label: string }[] = [
   { value: "pt", label: "PT" },
   { value: "de", label: "DE" },
   { value: "hi", label: "HI" },
+  { value: "tr", label: "TR" },
 ];
 
 export function LanguageSwitcherV2() {

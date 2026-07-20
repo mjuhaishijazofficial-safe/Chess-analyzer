@@ -1,7 +1,7 @@
 ﻿import { getRequestConfig } from "next-intl/server";
 import { cookies } from "next/headers";
 
-export const SUPPORTED_LOCALES = ["en", "es", "ru", "fr", "pt", "de", "hi"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "ru", "fr", "pt", "de", "hi", "tr"] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 
@@ -19,6 +19,8 @@ export default getRequestConfig(async () => {
     messages: (await import(`../../messages/${locale}.json`)).default,
   };
 });
+
+
 
 
 
