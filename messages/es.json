@@ -25,5 +25,25 @@
   },
   "LanguageSwitcher": {
     "label": "Idioma"
+  },
+  "Sidebar": {
+    "overview": "Resumen",
+    "stats": "Estadisticas",
+    "games": "Partidas",
+    "puzzles": "Puzzles",
+    "openings": "Aperturas",
+    "blog": "Blog",
+    "settings": "Ajustes",
+    "compare": "Comparar jugadores",
+    "journey": "Mi Trayectoria de Ajedrez",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Cerrar menu"
+  },
+  "Footer": {
+    "description": "Un lector para la API publica de Chess.com. ChessDeeper es un proyecto independiente y no esta afiliado ni respaldado por Chess.com.",
+    "publishedDataApi": "API de Datos Publicados",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "Politica de Privacidad",
+    "termsOfUse": "Terminos de Uso"
   }
 }

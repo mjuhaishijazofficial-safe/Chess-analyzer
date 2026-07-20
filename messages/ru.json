@@ -25,5 +25,25 @@
   },
   "LanguageSwitcher": {
     "label": "Язык"
+  },
+  "Sidebar": {
+    "overview": "Обзор",
+    "stats": "Статистика",
+    "games": "Партии",
+    "puzzles": "Пазлы",
+    "openings": "Дебюты",
+    "blog": "Блог",
+    "settings": "Настройки",
+    "compare": "Сравнить игроков",
+    "journey": "Мой шахматный путь",
+    "openMenu": "Открыть меню",
+    "closeMenu": "Закрыть меню"
+  },
+  "Footer": {
+    "description": "Клиент для публичного API Chess.com. ChessDeeper - независимый проект, не связанный с Chess.com и не одобренный им.",
+    "publishedDataApi": "Published-Data API",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfUse": "Условия использования"
   }
 }
