@@ -18,4 +18,8 @@ export default getRequestConfig(async () => {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default,
   };
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> ec943120a5aa8372a911a0dc1a62dade1fa81989
