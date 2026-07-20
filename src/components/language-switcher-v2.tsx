@@ -11,6 +11,7 @@ const LANGUAGES: { value: Locale; label: string }[] = [
   { value: "es", label: "ES" },
   { value: "ru", label: "RU" },
   { value: "fr", label: "FR" },
+  { value: "pt", label: "PT" },
 ];
 
 export function LanguageSwitcherV2() {
@@ -43,3 +44,4 @@ export function LanguageSwitcherV2() {
     </select>
   );
 }
+
