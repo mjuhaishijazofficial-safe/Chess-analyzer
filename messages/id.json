@@ -1,0 +1,49 @@
+{
+  "Home": {
+    "onlineBadge": "ONLINE - CHESS.COM + LICHESS",
+    "titleLine1": "TINGKATKAN",
+    "titleLine2": "CATURMU",
+    "description": "Masukkan username Chess.com atau Lichess kamu dan langsung buka statistik, rating, serta riwayat lengkap permainanmu - lalu jalankan <stockfish>analisis permainan Stockfish</stockfish> pada pertandingan mana pun, langkah demi langkah.",
+    "journeyLink": "Perjalanan Caturku",
+    "compareLink": "Bandingkan dua pemain",
+    "statTimeControls": "Kontrol waktu",
+    "statGames": "Permainan dalam arsipmu",
+    "statDepth": "Kedalaman analisis mesin",
+    "featureProfileTitle": "Profilmu",
+    "featureProfileBody": "Avatar, gelar, negara, liga, pengikut, dan tanggal bergabung.",
+    "featureRatingsTitle": "Rating dan rekor",
+    "featureRatingsBody": "Rating bullet, blitz, rapid, dan harian beserta puncak tertinggi.",
+    "featureReviewTitle": "Analisis permainan dengan mesin",
+    "featureReviewBody": "Telusuri permainan apa pun. Setiap langkah dinilai dari Terbaik hingga Blunder.",
+    "howItWorksTitle": "// cara kerjanya",
+    "step1Title": "Masukkan username kamu",
+    "step1Body": "Tanpa kata sandi, tanpa proses OAuth yang rumit.",
+    "step2Title": "Kami mengambil datamu",
+    "step2Body": "ChessDeeper memanggil API publik resmi.",
+    "step3Title": "Putar ulang",
+    "step3Body": "Jelajahi dashboard-mu dan mainkan ulang permainan apa pun."
+  },
+  "LanguageSwitcher": {
+    "label": "Bahasa"
+  },
+  "Sidebar": {
+    "overview": "Ikhtisar",
+    "stats": "Statistik",
+    "games": "Permainan",
+    "puzzles": "Puzzle",
+    "openings": "Pembukaan",
+    "blog": "Blog",
+    "settings": "Pengaturan",
+    "compare": "Bandingkan pemain",
+    "journey": "Perjalanan Caturku",
+    "openMenu": "Buka menu",
+    "closeMenu": "Tutup menu"
+  },
+  "Footer": {
+    "description": "Sebuah reader untuk API publik Chess.com. ChessDeeper adalah proyek independen dan tidak berafiliasi atau didukung oleh Chess.com.",
+    "publishedDataApi": "Published-Data API",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "Kebijakan Privasi",
+    "termsOfUse": "Ketentuan Penggunaan"
+  }
+}

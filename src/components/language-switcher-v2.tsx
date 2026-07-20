@@ -1,28 +1,26 @@
 "use client";
-
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { setLocale } from "@/i18n/set-locale";
 import type { Locale } from "@/i18n/request";
-
 const LANGUAGES: { value: Locale; label: string }[] = [
-  { value: "en", label: "EN" },
-  { value: "es", label: "ES" },
-  { value: "ru", label: "RU" },
-  { value: "fr", label: "FR" },
-  { value: "pt", label: "PT" },
-  { value: "de", label: "DE" },
-  { value: "hi", label: "HI" },
-  { value: "tr", label: "TR" },
+  { value: "en", label: "English" },
+  { value: "es", label: "Spanish" },
+  { value: "ru", label: "Russian" },
+  { value: "fr", label: "French" },
+  { value: "pt", label: "Portuguese" },
+  { value: "de", label: "German" },
+  { value: "hi", label: "Hindi" },
+  { value: "tr", label: "Turkish" },
+  { value: "nl", label: "Dutch" },
+  { value: "id", label: "Indonesian" },
 ];
-
 export function LanguageSwitcherV2() {
   const locale = useLocale();
   const t = useTranslations("LanguageSwitcher");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as Locale;
     startTransition(async () => {
@@ -30,7 +28,6 @@ export function LanguageSwitcherV2() {
       router.refresh();
     });
   }
-
   return (
     <select
       aria-label={t("label")}

@@ -1,0 +1,49 @@
+{
+  "Home": {
+    "onlineBadge": "ONLINE - CHESS.COM + LICHESS",
+    "titleLine1": "TIL JE SCHAAKSPEL",
+    "titleLine2": "NAAR EEN HOGER NIVEAU",
+    "description": "Voer je Chess.com- of Lichess-gebruikersnaam in en ontgrendel direct je statistieken, ratings en volledige partijgeschiedenis - voer daarna een <stockfish>Stockfish-partijanalyse</stockfish> uit op elke partij, zet voor zet.",
+    "journeyLink": "Mijn schaakreis",
+    "compareLink": "Vergelijk twee spelers",
+    "statTimeControls": "Tijdcontroles",
+    "statGames": "Partijen in je archief",
+    "statDepth": "Analysediepte van de engine",
+    "featureProfileTitle": "Jouw profiel",
+    "featureProfileBody": "Avatar, titel, land, league, volgers en aanmelddatum.",
+    "featureRatingsTitle": "Ratings en records",
+    "featureRatingsBody": "Bullet-, blitz-, rapid- en dagelijkse ratings met hoogste pieken.",
+    "featureReviewTitle": "Engine-partijanalyse",
+    "featureReviewBody": "Doorloop elke partij. Elke zet beoordeeld van Beste tot Blunder.",
+    "howItWorksTitle": "// hoe het werkt",
+    "step1Title": "Voer je gebruikersnaam in",
+    "step1Body": "Geen wachtwoord, geen OAuth-gedoe.",
+    "step2Title": "Wij halen je gegevens op",
+    "step2Body": "ChessDeeper gebruikt de officiële publieke API.",
+    "step3Title": "Speel het terug",
+    "step3Body": "Verken je dashboard en herbeleef elke partij."
+  },
+  "LanguageSwitcher": {
+    "label": "Taal"
+  },
+  "Sidebar": {
+    "overview": "Overzicht",
+    "stats": "Statistieken",
+    "games": "Partijen",
+    "puzzles": "Puzzels",
+    "openings": "Openingen",
+    "blog": "Blog",
+    "settings": "Instellingen",
+    "compare": "Spelers vergelijken",
+    "journey": "Mijn schaakreis",
+    "openMenu": "Menu openen",
+    "closeMenu": "Menu sluiten"
+  },
+  "Footer": {
+    "description": "Een reader voor de publieke Chess.com API. ChessDeeper is een onafhankelijk project en is niet verbonden aan of goedgekeurd door Chess.com.",
+    "publishedDataApi": "Published-Data API",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "Privacybeleid",
+    "termsOfUse": "Gebruiksvoorwaarden"
+  }
+}
