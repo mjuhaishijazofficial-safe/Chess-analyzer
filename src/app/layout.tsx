@@ -1,14 +1,10 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
-<<<<<<< HEAD
-import { LocaleProvider } from "@/lib/i18n/locale-context";
-=======
 import { RegisterServiceWorker } from "@/components/register-sw";
->>>>>>> 1f9f1337099efb984500e9f9fb3c3eb3499fcc00
 import { SITE_URL } from "@/lib/site-config";
 
 const geistSans = Geist({
@@ -23,16 +19,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ChessDeeper — Chess.com analytics",
-    template: "%s · ChessDeeper",
+    default: "ChessDeeper - Chess.com analytics",
+    template: "%s - ChessDeeper",
   },
   description:
     "Connect your Chess.com account and explore your profile, ratings, records and recent games in a clean analytics dashboard.",
   metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: "ChessDeeper — Chess.com analytics",
+    title: "ChessDeeper - Chess.com analytics",
     description:
-      "Profile, ratings, records and recent games — powered by the Chess.com public API.",
+      "Profile, ratings, records and recent games - powered by the Chess.com public API.",
     type: "website",
   },
   appleWebApp: {
@@ -59,28 +55,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex bg-bg text-fg">
-<<<<<<< HEAD
-        <LocaleProvider>
-          <SiteSidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </div>
-        </LocaleProvider>
-=======
         <RegisterServiceWorker />
-        {/* Language switcher / Google Translate temporarily disabled —
-            was hanging Chrome on page load, investigating before
-            re-enabling. See google-translate-init.tsx and
-            language-switcher.tsx (still present, just not mounted). */}
         <SiteSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </div>
->>>>>>> 1f9f1337099efb984500e9f9fb3c3eb3499fcc00
       </body>
     </html>
   );
