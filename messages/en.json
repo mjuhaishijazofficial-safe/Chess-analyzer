@@ -1,0 +1,29 @@
+{
+  "Home": {
+    "onlineBadge": "ONLINE - CHESS.COM + LICHESS",
+    "titleLine1": "LEVEL UP",
+    "titleLine2": "YOUR CHESS",
+    "description": "Drop your Chess.com or Lichess username and instantly unlock your stats, ratings and full game history - then run a <stockfish>Stockfish game review</stockfish> on any match, move by move.",
+    "journeyLink": "My Chess Journey",
+    "compareLink": "Compare two players",
+    "statTimeControls": "Time controls",
+    "statGames": "Games in your archive",
+    "statDepth": "Engine review depth",
+    "featureProfileTitle": "Your profile",
+    "featureProfileBody": "Avatar, title, country, league, followers and join date.",
+    "featureRatingsTitle": "Ratings and records",
+    "featureRatingsBody": "Bullet, blitz, rapid and daily ratings with peak highs.",
+    "featureReviewTitle": "Engine game review",
+    "featureReviewBody": "Step through any game. Every move graded Best to Blunder.",
+    "howItWorksTitle": "// how it works",
+    "step1Title": "Enter your username",
+    "step1Body": "No password, no OAuth dance.",
+    "step2Title": "We pull your data",
+    "step2Body": "ChessDeeper calls the official public API.",
+    "step3Title": "Play it back",
+    "step3Body": "Explore your dashboard and replay any game."
+  },
+  "LanguageSwitcher": {
+    "label": "Language"
+  }
+}

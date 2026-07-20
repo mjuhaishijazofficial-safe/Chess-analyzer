@@ -1,0 +1,29 @@
+{
+  "Home": {
+    "onlineBadge": "EN LINEA - CHESS.COM + LICHESS",
+    "titleLine1": "MEJORA TU",
+    "titleLine2": "AJEDREZ",
+    "description": "Ingresa tu usuario de Chess.com o Lichess y desbloquea al instante tus estadisticas, calificaciones e historial completo de partidas - luego ejecuta una <stockfish>revision con Stockfish</stockfish> en cualquier partida, jugada por jugada.",
+    "journeyLink": "Mi Trayectoria de Ajedrez",
+    "compareLink": "Comparar dos jugadores",
+    "statTimeControls": "Controles de tiempo",
+    "statGames": "Partidas en tu archivo",
+    "statDepth": "Profundidad de analisis",
+    "featureProfileTitle": "Tu perfil",
+    "featureProfileBody": "Avatar, titulo, pais, liga, seguidores y fecha de registro.",
+    "featureRatingsTitle": "Calificaciones y registros",
+    "featureRatingsBody": "Calificaciones de bullet, blitz, rapida y diaria con maximos historicos.",
+    "featureReviewTitle": "Revision con motor",
+    "featureReviewBody": "Recorre cualquier partida. Cada jugada calificada de Mejor a Error grave.",
+    "howItWorksTitle": "// como funciona",
+    "step1Title": "Ingresa tu usuario",
+    "step1Body": "Sin contrasena, sin proceso de OAuth.",
+    "step2Title": "Obtenemos tus datos",
+    "step2Body": "ChessDeeper usa la API publica oficial.",
+    "step3Title": "Reproducelo",
+    "step3Body": "Explora tu panel y repite cualquier partida."
+  },
+  "LanguageSwitcher": {
+    "label": "Idioma"
+  }
+}

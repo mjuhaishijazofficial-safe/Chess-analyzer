@@ -1,9 +1,11 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { LoginForm } from "@/components/login-form";
 
 import { getProfile, getStats } from "@/lib/chesscom";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations("Home");
   return (
     <>
       <section className="relative overflow-hidden">
@@ -14,17 +16,16 @@ export default function HomePage() {
           <div className="animate-rise">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/[0.06] px-3 py-1 font-mono text-xs text-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
-              ONLINE - CHESS.COM + LICHESS
+              {t("onlineBadge")}
             </div>
             <h1 className="mt-6 text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
-              <span className="block text-fg">LEVEL UP</span>
-              <span className="block text-gradient text-glow">YOUR CHESS</span>
+              <span className="block text-fg">{t("titleLine1")}</span>
+              <span className="block text-gradient text-glow">{t("titleLine2")}</span>
             </h1>
             <p className="mt-6 max-w-lg text-pretty text-base leading-relaxed text-muted sm:text-lg">
-              Drop your Chess.com or Lichess username and instantly unlock
-              your stats, ratings and full game history - then run a{" "}
-              <span className="text-fg">Stockfish game review</span> on any match,
-              move by move.
+              {t.rich("description", {
+                stockfish: (chunks) => <span className="text-fg">{chunks}</span>,
+              })}
             </p>
             <div className="mt-8">
               <LoginForm />
@@ -33,11 +34,11 @@ export default function HomePage() {
           <div className="animate-rise [animation-delay:120ms]">
             <div className="mb-3 flex flex-wrap justify-end gap-2">
               <a href="/journey" className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent">
-                My Chess Journey
+                {t("journeyLink")}
                 <span aria-hidden>-</span>
               </a>
               <a href="/compare" className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm font-semibold text-fg backdrop-blur transition hover:border-accent/50 hover:text-accent">
-                Compare two players
+                {t("compareLink")}
                 <span aria-hidden>-</span>
               </a>
             </div>
@@ -48,27 +49,27 @@ export default function HomePage() {
         </div>
         <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:px-6">
           <div className="grid grid-cols-3 divide-x divide-line rounded-2xl border border-line bg-panel/60 backdrop-blur">
-            <Stat value="4" label="Time controls" />
-            <Stat value="8" label="Games in your archive" />
-            <Stat value="D12" label="Engine review depth" />
+            <Stat value="4" label={t("statTimeControls")} />
+            <Stat value="8" label={t("statGames")} />
+            <Stat value="D12" label={t("statDepth")} />
           </div>
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid gap-4 sm:grid-cols-3">
-          <Feature icon="P" title="Your profile" body="Avatar, title, country, league, followers and join date." />
-          <Feature icon="R" title="Ratings and records" body="Bullet, blitz, rapid and daily ratings with peak highs." />
-          <Feature icon="E" title="Engine game review" body="Step through any game. Every move graded Best to Blunder." />
+          <Feature icon="P" title={t("featureProfileTitle")} body={t("featureProfileBody")} />
+          <Feature icon="R" title={t("featureRatingsTitle")} body={t("featureRatingsBody")} />
+          <Feature icon="E" title={t("featureReviewTitle")} body={t("featureReviewBody")} />
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
         <div className="relative overflow-hidden panel rounded-2xl p-8 sm:p-10">
           <div className="pointer-events-none absolute -left-20 -top-20 h-56 w-56 rounded-full bg-[radial-gradient(closest-side,rgba(34,211,238,0.12),transparent)]" />
-          <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-accent">// how it works</h2>
+          <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{t("howItWorksTitle")}</h2>
           <div className="mt-6 grid gap-8 sm:grid-cols-3">
-            <Step n="01" title="Enter your username" body="No password, no OAuth dance." />
-            <Step n="02" title="We pull your data" body="ChessDeeper calls the official public API." />
-            <Step n="03" title="Play it back" body="Explore your dashboard and replay any game." />
+            <Step n="01" title={t("step1Title")} body={t("step1Body")} />
+            <Step n="02" title={t("step2Title")} body={t("step2Body")} />
+            <Step n="03" title={t("step3Title")} body={t("step3Body")} />
           </div>
         </div>
       </section>
