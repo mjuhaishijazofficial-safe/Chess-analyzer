@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { NAV_ITEMS } from "./site-sidebar";
 import { Logo } from "./logo";
 
@@ -11,17 +12,16 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const t = useTranslations("Sidebar");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Close the drawer automatically whenever the route changes.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // Prevent the page behind the drawer from scrolling while it's open.
   useEffect(() => {
     if (open) {
       const prev = document.body.style.overflow;
@@ -45,7 +45,7 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Close menu"
+            aria-label={t("closeMenu")}
             className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-panel-2 hover:text-fg"
           >
             <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
@@ -68,7 +68,7 @@ export function MobileNav() {
               }`}
             >
               <span className={active ? "text-accent" : "text-faint"}>{item.icon}</span>
-              {item.label}
+              {t(item.key)}
             </Link>
           );
         })}
@@ -78,13 +78,13 @@ export function MobileNav() {
             href="/compare"
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-[15px] text-muted transition hover:bg-panel-2 hover:text-fg"
           >
-            ⚖️ Compare players
+            ⚖️ {t("compare")}
           </Link>
           <Link
             href="/journey"
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-[15px] text-muted transition hover:bg-panel-2 hover:text-fg"
           >
-            📜 My Chess Journey
+            📜 {t("journey")}
           </Link>
         </div>
       </nav>
@@ -96,7 +96,7 @@ export function MobileNav() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Open menu"
+        aria-label={t("openMenu")}
         className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-panel text-fg transition hover:border-line-strong"
       >
         <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">

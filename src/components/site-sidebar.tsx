@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Logo } from "./logo";
 
 type NavItem = {
   href: string;
-  label: string;
+  key: string;
   icon: ReactNode;
 };
 
@@ -83,17 +84,18 @@ function IconSettings() {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Overview", icon: <IconOverview /> },
-  { href: "/stats", label: "Stats", icon: <IconStats /> },
-  { href: "/games", label: "Games", icon: <IconGames /> },
-  { href: "/puzzles", label: "Puzzles", icon: <IconPuzzles /> },
-  { href: "/openings", label: "Openings", icon: <IconOpenings /> },
-  { href: "/blog", label: "Blog", icon: <IconBlog /> },
-  { href: "/settings", label: "Settings", icon: <IconSettings /> },
+  { href: "/", key: "overview", icon: <IconOverview /> },
+  { href: "/stats", key: "stats", icon: <IconStats /> },
+  { href: "/games", key: "games", icon: <IconGames /> },
+  { href: "/puzzles", key: "puzzles", icon: <IconPuzzles /> },
+  { href: "/openings", key: "openings", icon: <IconOpenings /> },
+  { href: "/blog", key: "blog", icon: <IconBlog /> },
+  { href: "/settings", key: "settings", icon: <IconSettings /> },
 ];
 
 export function SiteSidebar() {
   const pathname = usePathname();
+  const t = useTranslations("Sidebar");
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[220px] shrink-0 flex-col border-r border-line bg-panel px-3 py-4 md:flex">
@@ -115,7 +117,7 @@ export function SiteSidebar() {
               }`}
             >
               <span className={active ? "text-accent" : "text-faint"}>{item.icon}</span>
-              {item.label}
+              {t(item.key)}
             </Link>
           );
         })}

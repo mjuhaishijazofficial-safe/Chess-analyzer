@@ -1,15 +1,16 @@
 import { Logo } from "./logo";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const t = await getTranslations("Footer");
   return (
     <footer className="border-t border-line bg-bg-soft">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-3">
           <Logo />
           <p className="max-w-md text-sm leading-relaxed text-muted">
-            A reader for the Chess.com public API. ChessDeeper is an independent
-            project and is not affiliated with or endorsed by Chess.com.
+            {t("description")}
           </p>
         </div>
         <div className="flex flex-col gap-2 text-sm text-muted">
@@ -19,7 +20,7 @@ export function SiteFooter() {
             rel="noreferrer"
             className="transition hover:text-fg"
           >
-            Published-Data API ↗
+            {t("publishedDataApi")} ↗
           </a>
           <a
             href="https://www.chess.com"
@@ -27,13 +28,13 @@ export function SiteFooter() {
             rel="noreferrer"
             className="transition hover:text-fg"
           >
-            Chess.com ↗
+            {t("chessComLink")} ↗
           </a>
           <Link href="/privacy" className="transition hover:text-fg">
-            Privacy Policy
+            {t("privacyPolicy")}
           </Link>
           <Link href="/terms" className="transition hover:text-fg">
-            Terms of Use
+            {t("termsOfUse")}
           </Link>
           <span className="text-faint">
             © {new Date().getFullYear()} ChessDeeper
