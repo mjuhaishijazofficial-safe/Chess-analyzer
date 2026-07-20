@@ -87,7 +87,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/stats", label: "Stats", icon: <IconStats /> },
   { href: "/games", label: "Games", icon: <IconGames /> },
   { href: "/puzzles", label: "Puzzles", icon: <IconPuzzles /> },
-  { href: "/openings", label: "Openings", icon: <IconOpenings /> },
+ { href: "/openings", label: "Openings", icon: <IconOpenings /> },
+  { href: "/blog", label: "Blog", icon: <IconBlog /> },
   { href: "/settings", label: "Settings", icon: <IconSettings /> },
 ];
 
