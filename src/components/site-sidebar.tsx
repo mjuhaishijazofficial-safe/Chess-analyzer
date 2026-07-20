@@ -113,6 +113,7 @@ export function SiteSidebar() {
 
       <div className="flex flex-col gap-0.5 border-t border-line pt-3">
         <a
+
           href="https://www.chess.com/news/view/published-data-api"
           target="_blank"
           rel="noreferrer"
@@ -121,6 +122,7 @@ export function SiteSidebar() {
           API
         </a>
         <a
+        
           href="https://github.com"
           target="_blank"
           rel="noreferrer"
