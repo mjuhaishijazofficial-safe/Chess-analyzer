@@ -43,7 +43,7 @@ const ASSET = {
   asm: "/engine/stockfish.js",
 };
 
-const INIT_TIMEOUT = 25000;
+const INIT_TIMEOUT = 45000;
 const SEARCH_TIMEOUT = 30000;
 const MULTIPV = 2;
 
