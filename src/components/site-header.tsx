@@ -3,6 +3,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./logo";
 import { MobileNav } from "./mobile-nav";
+import { LanguageSwitcherV2 } from "./language-switcher-v2";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -39,6 +40,7 @@ export function SiteHeader() {
               </div>
             </form>
           )}
+          <LanguageSwitcherV2 />
         </div>
       </div>
     </header>

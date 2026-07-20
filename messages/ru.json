@@ -1,0 +1,29 @@
+{
+  "Home": {
+    "onlineBadge": "ОНЛАЙН - CHESS.COM + LICHESS",
+    "titleLine1": "ПРОКАЧАЙ",
+    "titleLine2": "СВОИ ШАХМАТЫ",
+    "description": "Введите свой никнейм Chess.com или Lichess и мгновенно получите доступ к статистике, рейтингам и полной истории партий - затем запустите <stockfish>разбор партии Stockfish</stockfish> для любой партии, ход за ходом.",
+    "journeyLink": "Мой шахматный путь",
+    "compareLink": "Сравнить двух игроков",
+    "statTimeControls": "Контроли времени",
+    "statGames": "Партий в архиве",
+    "statDepth": "Глубина анализа движка",
+    "featureProfileTitle": "Ваш профиль",
+    "featureProfileBody": "Аватар, титул, страна, лига, подписчики и дата регистрации.",
+    "featureRatingsTitle": "Рейтинги и рекорды",
+    "featureRatingsBody": "Рейтинги в пуле, блице, рапиде и классике с историческими максимумами.",
+    "featureReviewTitle": "Разбор партии движком",
+    "featureReviewBody": "Просмотрите любую партию. Каждый ход оценён от Лучшего до Зевка.",
+    "howItWorksTitle": "// как это работает",
+    "step1Title": "Введите свой никнейм",
+    "step1Body": "Без пароля, без OAuth.",
+    "step2Title": "Мы получаем ваши данные",
+    "step2Body": "ChessDeeper использует официальный публичный API.",
+    "step3Title": "Просмотрите разбор",
+    "step3Body": "Изучите панель и пересмотрите любую партию."
+  },
+  "LanguageSwitcher": {
+    "label": "Язык"
+  }
+}
