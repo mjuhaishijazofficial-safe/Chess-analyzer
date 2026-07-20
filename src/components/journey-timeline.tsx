@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import type { Game } from "@/lib/chesscom";
 import type { GameRow, Outcome } from "@/lib/format";
-import { timeAgo, TIME_CLASS_META } from "@/lib/format";
+import { TIME_CLASS_META } from "@/lib/format";
+import { TimeAgo } from "@/components/time-ago";
 import type { BiggestWin, BestStreak } from "@/lib/journey";
 import type { OpeningStat } from "@/lib/opening-breakdown";
 import { Engine } from "@/lib/engine";
@@ -217,7 +218,7 @@ export function JourneyTimeline({
                 <div className="font-mono text-lg font-bold text-fg">
                   beat {biggestWin.opponentName} ({biggestWin.opponentRating})
                 </div>
-                <div className="mt-0.5 text-xs text-faint">{timeAgo(biggestWin.endTime)}</div>
+                <div className="mt-0.5 text-xs text-faint"><TimeAgo unix={biggestWin.endTime} /></div>
               </div>
             ) : (
               <Empty text="No wins in your recent games sample." />

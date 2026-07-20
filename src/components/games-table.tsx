@@ -7,9 +7,9 @@ import type { GameRow, Outcome } from "@/lib/format";
 import {
   resultLabel,
   TIME_CLASS_META,
-  timeAgo,
   timeControlLabel,
 } from "@/lib/format";
+import { TimeAgo } from "@/components/time-ago";
 
 type OutcomeFilter = "all" | Outcome;
 type Platform = "chesscom" | "lichess";
@@ -169,7 +169,7 @@ function GameRowItem({
           {row.myRating}
         </div>
         <div className="font-mono text-[11px] text-faint">
-          {timeAgo(row.endTime)}
+          <TimeAgo unix={row.endTime} />
         </div>
       </div>
     </>
