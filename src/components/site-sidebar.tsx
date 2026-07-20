@@ -59,6 +59,15 @@ function IconOpenings() {
   );
 }
 
+function IconBlog() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
+      <path d="M4 4h9l3 3v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M6.5 8.5h7M6.5 11.5h7M6.5 14.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function IconSettings() {
   return (
     <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
@@ -79,6 +88,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/games", label: "Games", icon: <IconGames /> },
   { href: "/puzzles", label: "Puzzles", icon: <IconPuzzles /> },
   { href: "/openings", label: "Openings", icon: <IconOpenings /> },
+  { href: "/blog", label: "Blog", icon: <IconBlog /> },
   { href: "/settings", label: "Settings", icon: <IconSettings /> },
 ];
 
