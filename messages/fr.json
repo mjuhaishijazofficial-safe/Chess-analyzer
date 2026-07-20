@@ -1,0 +1,49 @@
+{
+  "Home": {
+    "onlineBadge": "EN LIGNE - CHESS.COM + LICHESS",
+    "titleLine1": "AMELIOREZ",
+    "titleLine2": "VOS ECHECS",
+    "description": "Entrez votre pseudo Chess.com ou Lichess et debloquez instantanement vos statistiques, classements et historique complet de parties - puis lancez une <stockfish>analyse Stockfish</stockfish> sur n'importe quelle partie, coup par coup.",
+    "journeyLink": "Mon Parcours d'Echecs",
+    "compareLink": "Comparer deux joueurs",
+    "statTimeControls": "Cadences",
+    "statGames": "Parties dans vos archives",
+    "statDepth": "Profondeur d'analyse",
+    "featureProfileTitle": "Votre profil",
+    "featureProfileBody": "Avatar, titre, pays, ligue, abonnes et date d'inscription.",
+    "featureRatingsTitle": "Classements et records",
+    "featureRatingsBody": "Classements bullet, blitz, rapide et journalier avec sommets historiques.",
+    "featureReviewTitle": "Analyse par moteur",
+    "featureReviewBody": "Parcourez n'importe quelle partie. Chaque coup note de Meilleur a Gaffe.",
+    "howItWorksTitle": "// comment ca marche",
+    "step1Title": "Entrez votre pseudo",
+    "step1Body": "Pas de mot de passe, pas d'OAuth.",
+    "step2Title": "Nous recuperons vos donnees",
+    "step2Body": "ChessDeeper utilise l'API publique officielle.",
+    "step3Title": "Revivez la partie",
+    "step3Body": "Explorez votre tableau de bord et revoyez n'importe quelle partie."
+  },
+  "LanguageSwitcher": {
+    "label": "Langue"
+  },
+  "Sidebar": {
+    "overview": "Apercu",
+    "stats": "Statistiques",
+    "games": "Parties",
+    "puzzles": "Puzzles",
+    "openings": "Ouvertures",
+    "blog": "Blog",
+    "settings": "Parametres",
+    "compare": "Comparer des joueurs",
+    "journey": "Mon Parcours d'Echecs",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
+  },
+  "Footer": {
+    "description": "Un lecteur pour l'API publique de Chess.com. ChessDeeper est un projet independant et n'est ni affilie ni approuve par Chess.com.",
+    "publishedDataApi": "API de Donnees Publiees",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "Politique de Confidentialite",
+    "termsOfUse": "Conditions d'Utilisation"
+  }
+}

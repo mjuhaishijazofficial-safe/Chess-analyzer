@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ const LANGUAGES: { value: Locale; label: string }[] = [
   { value: "en", label: "EN" },
   { value: "es", label: "ES" },
   { value: "ru", label: "RU" },
+  { value: "fr", label: "FR" },
 ];
 
 export function LanguageSwitcherV2() {
