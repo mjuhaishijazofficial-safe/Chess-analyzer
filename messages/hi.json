@@ -1,0 +1,49 @@
+{
+  "Home": {
+    "onlineBadge": "ऑनलाइन - CHESS.COM + LICHESS",
+    "titleLine1": "अपनी शतरंज",
+    "titleLine2": "बेहतर बनाएं",
+    "description": "अपना Chess.com या Lichess यूज़रनेम डालें और तुरंत अपनी स्टैट्स, रेटिंग्स और पूरी गेम हिस्ट्री देखें - फिर किसी भी मैच पर <stockfish>Stockfish गेम रिव्यू</stockfish> चलाएं, चाल दर चाल।",
+    "journeyLink": "मेरी शतरंज यात्रा",
+    "compareLink": "दो खिलाड़ियों की तुलना करें",
+    "statTimeControls": "टाइम कंट्रोल्स",
+    "statGames": "आपके संग्रह में गेम्स",
+    "statDepth": "इंजन रिव्यू गहराई",
+    "featureProfileTitle": "आपकी प्रोफ़ाइल",
+    "featureProfileBody": "एवतार, टाइटल, देश, लीग, फॉलोअर्स और जॉइन डेट।",
+    "featureRatingsTitle": "रेटिंग्स और रिकॉर्ड्स",
+    "featureRatingsBody": "बुलेट, ब्लिट्ज़, रैपिड और डेली रेटिंग्स, साथ में पीक हाई।",
+    "featureReviewTitle": "इंजन गेम रिव्यू",
+    "featureReviewBody": "किसी भी गेम को कदम दर कदम देखें। हर चाल बेस्ट से ब्लंडर तक ग्रेडेड।",
+    "howItWorksTitle": "// यह कैसे काम करता है",
+    "step1Title": "अपना यूज़रनेम डालें",
+    "step1Body": "कोई पासवर्ड नहीं, कोई OAuth नहीं।",
+    "step2Title": "हम आपका डेटा लाते हैं",
+    "step2Body": "ChessDeeper आधिकारिक पब्लिक API का उपयोग करता है।",
+    "step3Title": "दोबारा देखें",
+    "step3Body": "अपना डैशबोर्ड एक्सप्लोर करें और कोई भी गेम दोबारा देखें।"
+  },
+  "LanguageSwitcher": {
+    "label": "भाषा"
+  },
+  "Sidebar": {
+    "overview": "ओवरव्यू",
+    "stats": "स्टैट्स",
+    "games": "गेम्स",
+    "puzzles": "पज़ल्स",
+    "openings": "ओपनिंग्स",
+    "blog": "ब्लॉग",
+    "settings": "सेटिंग्स",
+    "compare": "खिलाड़ियों की तुलना करें",
+    "journey": "मेरी शतरंज यात्रा",
+    "openMenu": "मेनू खोलें",
+    "closeMenu": "मेनू बंद करें"
+  },
+  "Footer": {
+    "description": "Chess.com की पब्लिक API के लिए एक रीडर। ChessDeeper एक स्वतंत्र प्रोजेक्ट है और Chess.com से संबद्ध या अनुमोदित नहीं है।",
+    "publishedDataApi": "Published-Data API",
+    "chessComLink": "Chess.com",
+    "privacyPolicy": "प्राइवेसी पॉलिसी",
+    "termsOfUse": "उपयोग की शर्तें"
+  }
+}
