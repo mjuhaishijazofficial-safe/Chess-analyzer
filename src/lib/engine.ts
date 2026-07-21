@@ -279,9 +279,6 @@ export class Engine {
     const { depth, movetime } = this.current.opts;
     this.post(`position fen ${this.current.fen}`);
     if (movetime && depth) {
-      // Stockfish stops at whichever limit it hits first, so this gives us
-      // a time budget with a depth ceiling (in case a shallow/quiet
-      // position would otherwise burn the full movetime for no gain).
       this.post(`go depth ${depth} movetime ${movetime}`);
     } else if (movetime) {
       this.post(`go movetime ${movetime}`);
@@ -294,16 +291,6 @@ export class Engine {
     }, SEARCH_TIMEOUT);
   }
 
-  /**
-   * Set the bot's playing strength for future searches.
-   * - `null` → full engine strength (used for post-game analysis/review).
-   * - `100`-`3200` → Elo target. Values inside Stockfish's native range
-   *   (1320-3190) use `UCI_Elo`; values below that use `Skill Level`
-   *   instead, since UCI_Elo can't reliably emulate sub-1320 play.
-   *
-   * Safe to call any time — it waits for the engine to be ready and takes
-   * effect on the next `analyze()` call.
-   */
   async setStrength(elo: number | null): Promise<void> {
     await this.whenReady;
     this.strength = elo;
@@ -316,7 +303,6 @@ export class Engine {
 
     const clamped = Math.max(BOT_MIN_ELO, Math.min(BOT_MAX_ELO, elo));
     if (clamped < STOCKFISH_MIN_ELO) {
-      // Below Stockfish's Elo floor: use Skill Level instead of UCI_Elo.
       this.post("setoption name UCI_LimitStrength value false");
       this.post(`setoption name Skill Level value ${eloToSkillLevel(clamped)}`);
     } else {
@@ -328,7 +314,6 @@ export class Engine {
     }
   }
 
-  /** The Elo most recently passed to `setStrength()` (null = full strength). */
   get currentStrength(): number | null {
     return this.strength;
   }
