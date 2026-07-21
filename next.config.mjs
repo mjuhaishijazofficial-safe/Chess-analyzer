@@ -17,6 +17,14 @@ const CSP = [
 ].join("; ");
 
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lichess1.org",
+      },
+    ],
+  },
   async headers() {
     return [
       {
