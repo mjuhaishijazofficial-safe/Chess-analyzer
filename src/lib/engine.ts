@@ -47,6 +47,22 @@ const INIT_TIMEOUT = 45000;
 const SEARCH_TIMEOUT = 30000;
 const MULTIPV = 2;
 
+/** Stockfish's own UCI_Elo knob only goes this low/high. */
+export const STOCKFISH_MIN_ELO = 1320;
+export const STOCKFISH_MAX_ELO = 3190;
+export const BOT_MIN_ELO = 100;
+export const BOT_MAX_ELO = 3200;
+
+/**
+ * Below Stockfish's UCI_Elo floor (1320) we fall back to the coarser
+ * "Skill Level" (0-20) knob, which produces genuinely weak/beginner-like
+ * play instead of a strong engine pretending to be bad.
+ */
+function eloToSkillLevel(elo: number): number {
+  const t = (elo - BOT_MIN_ELO) / (STOCKFISH_MIN_ELO - BOT_MIN_ELO); // 0..1 across 100-1320
+  return Math.round(Math.max(0, Math.min(1, t)) * 20);
+}
+
 function isolated(): boolean {
   return (
     typeof SharedArrayBuffer !== "undefined" &&
@@ -80,6 +96,9 @@ export class Engine {
   private current: Job | null = null;
   private lines = new Map<number, PvLine>();
   private curDepth = 0;
+
+  /** null = full strength (analysis/review mode). */
+  private strength: number | null = null;
 
   constructor() {
     this.candidates = isolated()
@@ -273,6 +292,45 @@ export class Engine {
       this.post("stop");
       this.finish(this.lines.get(1)?.move ?? null);
     }, SEARCH_TIMEOUT);
+  }
+
+  /**
+   * Set the bot's playing strength for future searches.
+   * - `null` → full engine strength (used for post-game analysis/review).
+   * - `100`-`3200` → Elo target. Values inside Stockfish's native range
+   *   (1320-3190) use `UCI_Elo`; values below that use `Skill Level`
+   *   instead, since UCI_Elo can't reliably emulate sub-1320 play.
+   *
+   * Safe to call any time — it waits for the engine to be ready and takes
+   * effect on the next `analyze()` call.
+   */
+  async setStrength(elo: number | null): Promise<void> {
+    await this.whenReady;
+    this.strength = elo;
+
+    if (elo === null) {
+      this.post("setoption name UCI_LimitStrength value false");
+      this.post("setoption name Skill Level value 20");
+      return;
+    }
+
+    const clamped = Math.max(BOT_MIN_ELO, Math.min(BOT_MAX_ELO, elo));
+    if (clamped < STOCKFISH_MIN_ELO) {
+      // Below Stockfish's Elo floor: use Skill Level instead of UCI_Elo.
+      this.post("setoption name UCI_LimitStrength value false");
+      this.post(`setoption name Skill Level value ${eloToSkillLevel(clamped)}`);
+    } else {
+      this.post("setoption name Skill Level value 20");
+      this.post("setoption name UCI_LimitStrength value true");
+      this.post(
+        `setoption name UCI_Elo value ${Math.min(clamped, STOCKFISH_MAX_ELO)}`,
+      );
+    }
+  }
+
+  /** The Elo most recently passed to `setStrength()` (null = full strength). */
+  get currentStrength(): number | null {
+    return this.strength;
   }
 
   analyze(fen: string, opts: AnalyzeOpts): Promise<EngineEval> {
