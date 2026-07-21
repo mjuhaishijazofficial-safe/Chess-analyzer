@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Board } from "@/components/board";
 import { PIECE_SETS, getPieceSet, setPieceSet, type PieceSet } from "@/lib/piece-set";
