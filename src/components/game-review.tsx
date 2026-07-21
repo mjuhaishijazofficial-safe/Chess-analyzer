@@ -10,7 +10,8 @@ import { Board } from "./board";
 import { EvalBar } from "./eval-bar";
 import { MoveList } from "./move-list";
 import { CoachCard } from "./coach-card";
-import { ShareCard, type ShareCardData } from "./share-card";
+import dynamic from "next/dynamic";
+import type { ShareCardData } from "./share-card";
 import { Engine } from "@/lib/engine";
 import { coachReview, detectMotifs } from "@/lib/coach";
 import { speak, stopSpeaking, isTtsSupported } from "@/lib/tts";
@@ -25,6 +26,12 @@ import {
   type Classification,
   type MoveReview,
 } from "@/lib/chess-review";
+
+// ShareCard (aur uska html-to-image dependency) sirf tab chahiye jab
+// user share dialog kholta hai, isliye ise on-demand load karte hain.
+const ShareCard = dynamic(() => import("./share-card").then((m) => m.ShareCard), {
+  ssr: false,
+});
 
 type EngineState = "loading" | "running" | "done" | "unavailable";
 
