@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { Logo } from "./logo";
 import { MobileNav } from "./mobile-nav";
 import { LanguageSwitcherV2 } from "./language-switcher-v2";

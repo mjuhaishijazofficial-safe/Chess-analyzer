@@ -6,7 +6,7 @@
 // Opening Explorer landing page. Clicking a card navigates to /openings
 // with the category pre-filtered.
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Crown, Gem, Flag, Mountain, Flame, Shield, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
 import type { CategoryCard } from "@/lib/categories";
 
