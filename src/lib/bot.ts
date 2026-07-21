@@ -4,10 +4,6 @@
  * Wraps chess.js (game rules/legal moves) + Engine (Stockfish worker) into
  * one small API the /play page can drive: pick an Elo, pick how many free
  * opening moves the human gets, then alternate moves until game over.
- *
- * See "Bot Feature Specification": adjustable Elo 100-3200+, free opening
- * moves (0/1/2/3/5/10/custom), Stockfish UCI_Elo/UCI_LimitStrength/Skill
- * Level, and named strength profiles for display.
  */
 
 import { Chess, type Move } from "chess.js";
@@ -15,10 +11,8 @@ import { Engine, BOT_MIN_ELO, BOT_MAX_ELO } from "./engine";
 
 export { BOT_MIN_ELO, BOT_MAX_ELO };
 
-/** Preset Elo choices shown as quick-pick chips in the UI. */
 export const ELO_PRESETS = [100, 400, 800, 1200, 1600, 2000, 2400, 2800, 3200] as const;
 
-/** Preset free-opening-move counts, per the spec ("0,1,2,3,5,10 or any number"). */
 export const FREE_MOVE_PRESETS = [0, 1, 2, 3, 5, 10] as const;
 
 export interface StrengthProfile {
@@ -27,7 +21,6 @@ export interface StrengthProfile {
   max: number;
 }
 
-/** Named bands purely for display (e.g. "Elo 1450 — Intermediate"). */
 export const STRENGTH_PROFILES: StrengthProfile[] = [
   { name: "Beginner", min: 100, max: 799 },
   { name: "Intermediate", min: 800, max: 1799 },
@@ -46,14 +39,13 @@ export function clampElo(elo: number): number {
   return Math.max(BOT_MIN_ELO, Math.min(BOT_MAX_ELO, Math.round(elo)));
 }
 
-/** How long the bot "thinks" per move — scales with Elo so weak bots move fast and strong ones use more time. */
 function movetimeForElo(elo: number): number {
-  const t = (clampElo(elo) - BOT_MIN_ELO) / (BOT_MAX_ELO - BOT_MIN_ELO); // 0..1
-  return Math.round(300 + t * 2200); // 300ms (Elo 100) .. 2500ms (Elo 3200)
+  const t = (clampElo(elo) - BOT_MIN_ELO) / (BOT_MAX_ELO - BOT_MIN_ELO);
+  return Math.round(300 + t * 2200);
 }
 
 export type GameStatus =
-  | "free-moves" // human is still playing out their free opening moves
+  | "free-moves"
   | "playing"
   | "bot-thinking"
   | "checkmate"
@@ -64,7 +56,6 @@ export type GameStatus =
 export interface BotGameOpts {
   elo: number;
   freeMoves: number;
-  /** Which side the human plays. */
   humanColor?: "w" | "b";
 }
 
@@ -78,11 +69,6 @@ export interface BotGameSnapshot {
   winner: "w" | "b" | null;
 }
 
-/**
- * Drives one game against the bot. Create it, call `humanMove()` for the
- * player's turns (including free-opening ones), and it fires `onChange`
- * whenever the board updates — including after the bot replies on its own.
- */
 export class BotGame {
   private chess = new Chess();
   private engine: Engine;
@@ -142,19 +128,18 @@ export class BotGame {
     return false;
   }
 
-  /** Human plays a move (`from`/`to` squares, e.g. "e2"/"e4"). Promotion defaults to queen. */
   async humanMove(from: string, to: string, promotion = "q"): Promise<boolean> {
     if (this.destroyed) return false;
     if (this.status !== "playing" && this.status !== "free-moves") return false;
     if (this.chess.turn() !== this.opts.humanColor && this.status !== "free-moves") {
-      return false; // not the human's turn
+      return false;
     }
 
     let move: Move | null = null;
     try {
       move = this.chess.move({ from, to, promotion });
     } catch {
-      return false; // illegal move
+      return false;
     }
     if (!move) return false;
 
@@ -162,8 +147,6 @@ export class BotGame {
       this.freeMovesRemaining = Math.max(0, this.freeMovesRemaining - 1);
       if (this.freeMovesRemaining === 0) this.status = "playing";
       this.emit();
-      // During free moves the bot doesn't reply — the human keeps setting
-      // up the position until they've used all their free moves.
       return true;
     }
 
@@ -176,7 +159,6 @@ export class BotGame {
     return true;
   }
 
-  /** Called if the human wants to stop taking free moves early. */
   async finishFreeMoves(): Promise<void> {
     if (this.destroyed) return;
     this.freeMovesRemaining = 0;
@@ -188,7 +170,7 @@ export class BotGame {
   private async maybeBotMove(): Promise<void> {
     if (this.destroyed) return;
     if (this.status !== "playing") return;
-    if (this.chess.turn() === this.opts.humanColor) return; // waiting on human
+    if (this.chess.turn() === this.opts.humanColor) return;
 
     this.status = "bot-thinking";
     this.emit();
@@ -228,7 +210,6 @@ export class BotGame {
     this.emit();
   }
 
-  /** Change the bot's Elo mid-game. */
   async setElo(elo: number): Promise<void> {
     this.opts.elo = clampElo(elo);
     await this.engine.setStrength(this.opts.elo);
