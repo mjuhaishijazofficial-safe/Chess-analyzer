@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { buildLanguageAlternates } from "@/lib/seo";
 import { getPlayerBundle as getChesscomBundle } from "@/lib/chesscom";
 import { getPlayerBundle as getLichessBundle } from "@/lib/lichess";
 import { toChesscomBundle } from "@/lib/lichess-adapter";
@@ -43,7 +44,7 @@ function attachRecentRecords(
 }
 
 interface PageProps {
-  params: Promise<{ username: string }>;
+  params: Promise<{ locale: string; username: string }>;
   searchParams: Promise<{ platform?: string }>;
 }
 
@@ -57,6 +58,9 @@ export async function generateMetadata({
   return {
     title: `@${username.toLowerCase()}`,
     description: `${site} profile, ratings and recent games for ${username}.`,
+    alternates: {
+      languages: buildLanguageAlternates(`/player/${username.toLowerCase()}`),
+    },
   };
 }
 

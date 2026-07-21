@@ -1,4 +1,4 @@
-import { Link } from "@/i18n/navigation";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { findGameByUuid } from "@/lib/chesscom";
@@ -12,23 +12,17 @@ import {
   timeControlLabel,
 } from "@/lib/format";
 import { GameReview } from "@/components/game-review";
-import { buildLanguageAlternates } from "@/lib/seo";
 
 interface PageProps {
-  params: Promise<{ locale: string; username: string; uuid: string }>;
+  params: Promise<{ username: string; uuid: string }>;
   searchParams: Promise<{ platform?: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { username, uuid } = await params;
-  return {
-    title: `Review . @${username.toLowerCase()}`,
-    alternates: {
-      languages: buildLanguageAlternates(`/player/${username.toLowerCase()}/game/${uuid}`),
-    },
-  };
+  const { username } = await params;
+  return { title: `Review · @${username.toLowerCase()}` };
 }
 
 export default async function GameReviewPage({ params, searchParams }: PageProps) {
@@ -45,7 +39,7 @@ export default async function GameReviewPage({ params, searchParams }: PageProps
   const meta = TIME_CLASS_META[game.time_class];
   const whiteWon = outcomeFromResult(game.white.result) === "win";
   const blackWon = outcomeFromResult(game.black.result) === "win";
-  const resultText = whiteWon ? "1-0" : blackWon ? "0-1" : "1/2-1/2";
+  const resultText = whiteWon ? "1–0" : blackWon ? "0–1" : "½–½";
 
   const playerColor: "white" | "black" =
     game.white.username.toLowerCase() === user ? "white" : "black";
@@ -66,7 +60,7 @@ export default async function GameReviewPage({ params, searchParams }: PageProps
             href={backHref}
             className="font-mono text-xs text-muted transition hover:text-fg"
           >
-            {String.fromCharCode(8592)} @{user}
+            ← @{user}
           </Link>
           <h1 className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xl font-semibold tracking-tight sm:text-2xl">
             <PlayerInline
@@ -85,13 +79,13 @@ export default async function GameReviewPage({ params, searchParams }: PageProps
             <span>
               {meta.icon} {meta.label}
             </span>
-            <span className="text-faint">{String.fromCharCode(183)}</span>
+            <span className="text-faint">·</span>
             <span className="font-mono">
               {timeControlLabel(game.time_control)}
             </span>
-            <span className="text-faint">{String.fromCharCode(183)}</span>
+            <span className="text-faint">·</span>
             <span>{formatDate(game.end_time)}</span>
-            <span className="text-faint">{String.fromCharCode(183)}</span>
+            <span className="text-faint">·</span>
             <span>
               {resultLabel(game.white.result)} /{" "}
               {resultLabel(game.black.result)}
@@ -99,16 +93,13 @@ export default async function GameReviewPage({ params, searchParams }: PageProps
           </div>
         </div>
 
-        
-          <a
-
-        
-            href={game.url}
+        <a
+          href={game.url}
           target="_blank"
           rel="noreferrer"
           className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg transition hover:border-line-strong"
         >
-          Open on {siteName} {String.fromCharCode(8599)}
+          Open on {siteName} ↗
         </a>
       </div>
 
@@ -118,12 +109,12 @@ export default async function GameReviewPage({ params, searchParams }: PageProps
           whiteName={game.white.username}
           blackName={game.black.username}
           playerColor={playerColor}
-          result={whiteWon ? "1-0" : blackWon ? "0-1" : "1/2-1/2"}
+          result={whiteWon ? "1-0" : blackWon ? "0-1" : "½-½"}
           platform={isLichess ? "lichess" : "chesscom"}
         />
       ) : (
         <div className="panel rounded-2xl p-6 text-sm text-muted">
-          This game can&apos;t be reviewed {String.fromCharCode(8212)} engine review is only available for
+          This game can&apos;t be reviewed — engine review is only available for
           standard chess games with recorded moves.
         </div>
       )}
@@ -142,7 +133,7 @@ function PlayerInline({
 }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      {won && <span className="text-accent">{String.fromCharCode(9819)}</span>}
+      {won && <span className="text-accent">♚</span>}
       <span className="text-fg">{name}</span>
       <span className="font-mono text-sm text-faint">({rating})</span>
     </span>
