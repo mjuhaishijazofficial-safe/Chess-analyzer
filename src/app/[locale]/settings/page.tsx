@@ -97,9 +97,11 @@ export default function SettingsPage() {
                     : "border-line bg-panel hover:border-line-strong"
                 }`}
               >
-                <img
+                <Image
                   src={`https://lichess1.org/assets/piece/${set}/wN.svg`}
                   alt={set}
+                  width={64}
+                  height={64}
                   className="mx-auto mb-2 h-16 w-16"
                 />
                 <span className="text-sm capitalize text-fg">{set}</span>
