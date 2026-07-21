@@ -1,9 +1,9 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTransition } from "react";
-import { setLocale } from "@/i18n/set-locale";
 import type { Locale } from "@/i18n/request";
+
 const LANGUAGES: { value: Locale; label: string }[] = [
   { value: "en", label: "English" },
   { value: "es", label: "Spanish" },
@@ -16,18 +16,21 @@ const LANGUAGES: { value: Locale; label: string }[] = [
   { value: "nl", label: "Dutch" },
   { value: "id", label: "Indonesian" },
 ];
+
 export function LanguageSwitcherV2() {
   const locale = useLocale();
   const t = useTranslations("LanguageSwitcher");
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
+
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as Locale;
-    startTransition(async () => {
-      await setLocale(next);
-      router.refresh();
+    startTransition(() => {
+      router.replace(pathname, { locale: next });
     });
   }
+
   return (
     <select
       aria-label={t("label")}

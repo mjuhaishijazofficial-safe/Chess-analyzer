@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { BLOG_POSTS, getBlogPost } from "@/lib/blog-posts";
+import { buildLanguageAlternates } from "@/lib/seo";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }
 
 export function generateStaticParams() {
@@ -20,6 +21,9 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      languages: buildLanguageAlternates(`/blog/${slug}`),
+    },
   };
 }
 
@@ -27,20 +31,17 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const post = getBlogPost(slug);
   if (!post) notFound();
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <Link href="/blog" className="text-sm text-accent underline underline-offset-2">
-        ← All posts
+        {String.fromCharCode(8592)} All posts
       </Link>
-
       <div className="mt-4 font-mono text-xs text-faint">
         {formatDate(post.date)}
       </div>
       <h1 className="mt-1 text-3xl font-bold tracking-tight text-fg">
         {post.title}
       </h1>
-
       <div className="mt-6 space-y-4">
         {post.content.map((paragraph, i) => (
           <p key={i} className="leading-relaxed text-muted">
@@ -48,16 +49,14 @@ export default async function BlogPostPage({ params }: PageProps) {
           </p>
         ))}
       </div>
-
       <div className="mt-12">
         <Link href="/blog" className="text-sm text-accent underline underline-offset-2">
-          ← All posts
+          {String.fromCharCode(8592)} All posts
         </Link>
       </div>
     </div>
   );
 }
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
     year: "numeric",

@@ -9,7 +9,7 @@
 // real Favorites feature (Phase 2 on the roadmap) once that exists.
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Star } from "lucide-react";
 import { MiniChessBoard } from "@/components/mini-chess-board";
 import type { OpeningSummary } from "@/types/opening";

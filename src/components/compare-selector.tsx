@@ -7,7 +7,8 @@
 // link and the actual data-fetching/rendering stays in the server
 // component that reads these params.
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import type { OpeningSummary } from "@/types/opening";
 
 interface CompareSelectorProps {
