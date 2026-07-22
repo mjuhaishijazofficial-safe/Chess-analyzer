@@ -131,7 +131,8 @@ export default function PlayPage() {
     const profile = strengthProfileFor(elo);
     return (
       <div className="mx-auto max-w-lg px-4 py-10">
-        <h1 className="text-2xl font-semibold text-fg mb-6">Play vs Bot</h1>
+        <h1 className="text-2xl font-semibold text-fg">Play vs ChessDeeper AI</h1>
+        <p className="mb-6 text-sm text-faint">Powered by Stockfish</p>
 
         <label className="block mb-2 text-sm text-faint">
           Bot strength — Elo {elo} ({profile.name})
