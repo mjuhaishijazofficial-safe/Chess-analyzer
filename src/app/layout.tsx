@@ -40,6 +40,21 @@ export const viewport: Viewport = {
   themeColor: "#07080a",
 };
 
+// Runs before React hydrates so the saved theme applies immediately on
+// first paint instead of flashing the default "terminal" theme for a
+// moment. Kept tiny and defensive (try/catch) since it runs outside
+// React's control.
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    var t = localStorage.getItem('chessdeeper-theme');
+    if (t === 'club') {
+      document.documentElement.setAttribute('data-theme', 'club');
+    }
+  } catch (e) {}
+})();
+`;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -50,9 +65,13 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex bg-bg text-fg">{children}</body>
+      <body className="min-h-full flex bg-bg text-fg">
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {children}
+      </body>
     </html>
   );
 }
