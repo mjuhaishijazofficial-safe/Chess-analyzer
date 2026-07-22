@@ -40,16 +40,22 @@ export const viewport: Viewport = {
   themeColor: "#07080a",
 };
 
-// Runs before React hydrates so the saved theme applies immediately on
-// first paint instead of flashing the default "terminal" theme for a
-// moment. Kept tiny and defensive (try/catch) since it runs outside
-// React's control.
+// Runs before React hydrates so the saved theme + mode apply immediately on
+// first paint instead of flashing defaults for a moment. Kept tiny and
+// defensive (try/catch) since it runs outside React's control.
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
-    var t = localStorage.getItem('chessdeeper-theme');
-    if (t === 'club') {
-      document.documentElement.setAttribute('data-theme', 'club');
+    var theme = localStorage.getItem("chessdeeper-theme");
+    var mode = localStorage.getItem("chessdeeper-mode");
+    var validThemes = ["terminal","club","midnight","aurora","arctic","forest"];
+    if (theme && validThemes.indexOf(theme) !== -1 && theme !== "terminal") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+    if (mode === "dark" || mode === "light") {
+      document.documentElement.setAttribute("data-mode", mode);
+    } else {
+      document.documentElement.setAttribute("data-mode", theme === "forest" ? "light" : "dark");
     }
   } catch (e) {}
 })();
@@ -68,10 +74,8 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex bg-bg text-fg">
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        {children}
-      </body>
+      <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      <body className="min-h-full flex bg-bg text-fg">{children}</body>
     </html>
   );
 }
