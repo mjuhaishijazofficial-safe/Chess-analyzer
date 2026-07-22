@@ -656,4 +656,143 @@
     background: none !important;
     box-shadow: none !important;
   }
+
+
+  /* ------------------------------------------------------------------ */
+/*  Light-mode variants — one per theme (Forest already IS the light   */
+/*  default, so it gets a DARK variant instead). Higher specificity    */
+/*  than the base theme blocks above, so these safely win when active. */
+/* ------------------------------------------------------------------ */
+
+/* Terminal — light */
+:root:not([data-theme])[data-mode="light"] {
+  color-scheme: light;
+  --color-bg: #f7faf8;
+  --color-bg-soft: #eef4f0;
+  --color-panel: #ffffff;
+  --color-panel-2: #eef4f0;
+  --color-line: rgba(20, 40, 30, 0.1);
+  --color-line-strong: rgba(20, 40, 30, 0.2);
+
+  --color-fg: #0f1a14;
+  --color-muted: #4b5b52;
+  --color-faint: #7c8b82;
+
+  --color-accent: #16a34a;
+  --color-accent-rgb: 22, 163, 74;
+  --color-accent-soft: #15803d;
+  --color-cyan: #0891b2;
+  --color-amber: #b45309;
+  --color-rose: #be123c;
+}
+
+/* Club — light */
+[data-theme="club"][data-mode="light"] {
+  color-scheme: light;
+  --color-bg: #faf6ee;
+  --color-bg-soft: #f3ecdd;
+  --color-panel: #ffffff;
+  --color-panel-2: #f3ecdd;
+  --color-line: rgba(60, 45, 20, 0.12);
+  --color-line-strong: rgba(60, 45, 20, 0.22);
+
+  --color-fg: #2a2013;
+  --color-muted: #6b5d47;
+  --color-faint: #9c8f76;
+
+  --color-accent: #9c7a3d;
+  --color-accent-rgb: 156, 122, 61;
+  --color-accent-soft: #7a5f30;
+  --color-cyan: #3f6d5e;
+  --color-amber: #9c7a3d;
+  --color-rose: #9c4a3d;
+}
+
+/* Midnight — light */
+[data-theme="midnight"][data-mode="light"] {
+  color-scheme: light;
+  --color-bg: #f4f7fd;
+  --color-bg-soft: #eaf0fb;
+  --color-panel: #ffffff;
+  --color-panel-2: #eaf0fb;
+  --color-line: rgba(30, 50, 90, 0.1);
+  --color-line-strong: rgba(30, 50, 90, 0.2);
+
+  --color-fg: #101a30;
+  --color-muted: #4c5a78;
+  --color-faint: #8291ad;
+
+  --color-accent: #2563eb;
+  --color-accent-rgb: 37, 99, 235;
+  --color-accent-soft: #1d4ed8;
+  --color-cyan: #0284c7;
+  --color-amber: #b45309;
+  --color-rose: #be123c;
+}
+
+/* Aurora — light */
+[data-theme="aurora"][data-mode="light"] {
+  color-scheme: light;
+  --color-bg: #faf6ff;
+  --color-bg-soft: #f2eafd;
+  --color-panel: #ffffff;
+  --color-panel-2: #f2eafd;
+  --color-line: rgba(90, 40, 140, 0.1);
+  --color-line-strong: rgba(90, 40, 140, 0.2);
+
+  --color-fg: #221733;
+  --color-muted: #5f4d78;
+  --color-faint: #9682ad;
+
+  --color-accent: #9333ea;
+  --color-accent-rgb: 147, 51, 234;
+  --color-accent-soft: #7e22ce;
+  --color-cyan: #0891b2;
+  --color-amber: #b45309;
+  --color-rose: #db2777;
+}
+
+/* Arctic — light */
+[data-theme="arctic"][data-mode="light"] {
+  color-scheme: light;
+  --color-bg: #f2fafd;
+  --color-bg-soft: #e7f4fa;
+  --color-panel: #ffffff;
+  --color-panel-2: #e7f4fa;
+  --color-line: rgba(20, 60, 80, 0.1);
+  --color-line-strong: rgba(20, 60, 80, 0.2);
+
+  --color-fg: #0d222c;
+  --color-muted: #46687a;
+  --color-faint: #82a3b3;
+
+  --color-accent: #0891b2;
+  --color-accent-rgb: 8, 145, 178;
+  --color-accent-soft: #0e7490;
+  --color-cyan: #0284c7;
+  --color-amber: #b45309;
+  --color-rose: #be123c;
+}
+
+/* Forest — dark (Forest's own block above stays as its light default) */
+[data-theme="forest"][data-mode="dark"] {
+  color-scheme: dark;
+  --color-bg: #10160f;
+  --color-bg-soft: #0c110b;
+  --color-panel: #161d14;
+  --color-panel-2: #1c241a;
+  --color-line: rgba(150, 190, 140, 0.12);
+  --color-line-strong: rgba(150, 190, 140, 0.2);
+
+  --color-fg: #eaf3e6;
+  --color-muted: #a3b89c;
+  --color-faint: #647a5d;
+
+  --color-accent: #6fae7c;
+  --color-accent-rgb: 111, 174, 124;
+  --color-accent-soft: #8fc79c;
+  --color-cyan: #4a8f7a;
+  --color-amber: #d9a84e;
+  --color-rose: #d9705f;
+}
 }
