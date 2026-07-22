@@ -14,7 +14,7 @@
 
   --color-fg: #e9edf1;
   --color-muted: #8b94a3;
-  --color-faint: #5b6472;
+  --color-faint: #727d8e;
 
   --color-accent: #4ade80;
   --color-accent-rgb: 74, 222, 128;
@@ -31,10 +31,6 @@
 
 /* ------------------------------------------------------------------ */
 /*  "Club" theme — premium wooden-chess-club aesthetic (gold + felt)   */
-/*  Toggled via <html data-theme="club">, set from Settings.           */
-/*  Overrides the same CSS custom properties @theme defines above, so  */
-/*  every existing bg-bg / text-fg / border-line utility re-themes     */
-/*  automatically — no per-component changes needed for base colors.  */
 /* ------------------------------------------------------------------ */
 [data-theme="club"] {
   --color-bg: #12161a;
@@ -61,9 +57,6 @@
   --shadow-glow: 0 0 0 1px rgba(201, 164, 100, 0.25), 0 0 28px -6px rgba(201, 164, 100, 0.45);
 }
 
-/* Body copy reads better in a plain sans in the club theme — Fraunces is
-   a display/heading serif, so keep it for headings only and fall back to
-   Inter for everyday text. */
 [data-theme="club"] body {
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
@@ -138,158 +131,50 @@
 }
 
 /* ------------------------------------------------------------------ */
-/*  "Arctic Frost" theme — dark blue-gray + icy cyan/white accents     */
+/*  "Arctic" theme — dark blue-gray + icy cyan/white accents, crisp    */
 /* ------------------------------------------------------------------ */
 [data-theme="arctic"] {
-  --color-bg: #0a1420;
-  --color-bg-soft: #08111c;
-  --color-panel: #0f1e2e;
-  --color-panel-2: #142639;
-  --color-line: rgba(148, 210, 230, 0.14);
-  --color-line-strong: rgba(148, 210, 230, 0.26);
+  --color-bg: #0a1520;
+  --color-bg-soft: #081019;
+  --color-panel: #0f1e2b;
+  --color-panel-2: #142737;
+  --color-line: rgba(125, 211, 252, 0.14);
+  --color-line-strong: rgba(125, 211, 252, 0.24);
 
-  --color-fg: #eaf6fb;
-  --color-muted: #8fb3c4;
-  --color-faint: #4f6b7c;
+  --color-fg: #eaf6ff;
+  --color-muted: #8fb4cc;
+  --color-faint: #52738a;
 
-  --color-accent: #67e8f9;
-  --color-accent-rgb: 103, 232, 249;
+  --color-accent: #7dd3fc;
+  --color-accent-rgb: 125, 211, 252;
   --color-accent-soft: #a5f3fc;
-  --color-cyan: #38bdf8;
+  --color-cyan: #67e8f9;
   --color-amber: #fbbf24;
   --color-rose: #fb7185;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 
-  --shadow-glow: 0 0 0 1px rgba(103, 232, 249, 0.25), 0 0 28px -6px rgba(103, 232, 249, 0.45);
+  --shadow-glow: 0 0 0 1px rgba(125, 211, 252, 0.25), 0 0 28px -6px rgba(125, 211, 252, 0.45);
 }
 
-/* Hero background photo — misty blue mountains at dawn (Unsplash, free
-   license). Only shown in the Arctic theme; other themes keep their
-   existing hero background untouched. Apply the `.hero-visual` class to
-   the hero section's background wrapper. */
-[data-theme="arctic"] .hero-visual {
-  background-image:
-    linear-gradient(180deg, rgba(10, 20, 32, 0.55) 0%, rgba(10, 20, 32, 0.85) 65%, var(--color-bg) 100%),
-    url("https://images.unsplash.com/photo-1758637689499-b3b477a5fecb?fm=jpg&q=70&w=2400&auto=format&fit=crop");
-  background-size: cover;
-  background-position: center 30%;
+[data-theme="arctic"] .text-gradient {
+  background: linear-gradient(100deg, var(--color-fg) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-theme="arctic"] .hero-arctic-bg {
+  background-image: url("/hero-arctic-bg.svg");
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: contain;
 }
 
 /* ------------------------------------------------------------------ */
 /*  "Forest Nordic" theme — soft cream + forest green, light & calm    */
-/* ------------------------------------------------------------------ */
-[data-theme="forest"] {
-  color-scheme: light;
-
-  --color-bg: #f6f2e7;
-  --color-bg-soft: #efe9d8;
-  --color-panel: #fffdf7;
-  --color-panel-2: #eee7d3;
-  --color-line: rgba(63, 79, 53, 0.14);
-  --color-line-strong: rgba(63, 79, 53, 0.24);
-
-  --color-fg: #24301f;
-  --color-muted: #5c6b50;
-  --color-faint: #8b9a7c;
-
-  --color-accent: #3f6b3f;
-  --color-accent-rgb: 63, 107, 63;
-  --color-accent-soft: #598c58;
-  --color-cyan: #4a7c72;
-  --color-amber: #b8863b;
-  --color-rose: #b1584a;
-
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-
-  --shadow-glow: 0 0 0 1px rgba(63, 107, 63, 0.2), 0 0 28px -6px rgba(63, 107, 63, 0.35);
-}
-
-[data-theme="forest"] ::selection {
-  color: #1a2416;
-}
-[data-theme="forest"] ::-webkit-scrollbar-thumb {
-  border: 2px solid var(--color-bg);
-}
-
-/* ------------------------------------------------------------------ */
-/*  "Forest Sage" theme — light cream + forest green, no photo, just   */
-/*  the palette. The only LIGHT theme, so color-scheme + a few         */
-/*  dark-hardcoded bits (selection text, scrollbar) get overridden too.*/
-/* ------------------------------------------------------------------ */
-[data-theme="forest"] {
-  color-scheme: light;
-
-  --color-bg: #f6f1e6;
-  --color-bg-soft: #efe7d5;
-  --color-panel: #fbf8f0;
-  --color-panel-2: #f0e9d8;
-  --color-line: rgba(43, 35, 24, 0.1);
-  --color-line-strong: rgba(43, 35, 24, 0.18);
-
-  --color-fg: #2b2318;
-  --color-muted: #6b6152;
-  --color-faint: #9a8f7a;
-
-  --color-accent: #4a7c59;
-  --color-accent-rgb: 74, 124, 89;
-  --color-accent-soft: #6fa87f;
-  --color-cyan: #4a7c59;
-  --color-amber: #c9a464;
-  --color-rose: #b5584b;
-
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-
-  --shadow-glow: 0 0 0 1px rgba(74, 124, 89, 0.2), 0 0 28px -6px rgba(74, 124, 89, 0.35);
-}
-[data-theme="forest"] ::selection {
-  color: #1a1a1a;
-}
-[data-theme="forest"] ::-webkit-scrollbar-thumb {
-  background: #d8cfb8;
-  border: 2px solid var(--color-bg);
-}
-[data-theme="forest"] ::-webkit-scrollbar-thumb:hover {
-  background: #c7bc9e;
-}
-
-/* ------------------------------------------------------------------ */
-/*  "Forest Nomadic" theme — warm cream background + forest green,     */
-/*  the one light theme in the set. No hero photo — pure color/type.   */
-/* ------------------------------------------------------------------ */
-[data-theme="forest"] {
-  color-scheme: light;
-
-  --color-bg: #f6f1e4;
-  --color-bg-soft: #efe8d6;
-  --color-panel: #fbf8ef;
-  --color-panel-2: #f0e9d8;
-  --color-line: rgba(43, 58, 47, 0.12);
-  --color-line-strong: rgba(43, 58, 47, 0.22);
-
-  --color-fg: #263426;
-  --color-muted: #5c6b5e;
-  --color-faint: #8a9a8c;
-
-  --color-accent: #3f7d4f;
-  --color-accent-rgb: 63, 125, 79;
-  --color-accent-soft: #6fae7c;
-  --color-cyan: #4a8f7a;
-  --color-amber: #c8963e;
-  --color-rose: #b5584b;
-
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-
-  --shadow-glow: 0 0 0 1px rgba(63, 125, 79, 0.2), 0 0 28px -6px rgba(63, 125, 79, 0.35);
-}
-
-/* ------------------------------------------------------------------ */
-/*  "Forest Nomadic" theme — soft cream + forest green, the one LIGHT  */
-/*  option among the themes. Overrides color-scheme too.               */
+/*  (the one LIGHT theme by default among the 6 base palettes)         */
 /* ------------------------------------------------------------------ */
 [data-theme="forest"] {
   color-scheme: light;
@@ -318,9 +203,6 @@
   --shadow-glow: 0 0 0 1px rgba(77, 124, 77, 0.18), 0 0 28px -6px rgba(77, 124, 77, 0.3);
 }
 
-/* Hero background photo — pine forest lake, bright and calm (Unsplash,
-   free license). Softer overlay than the dark themes since the base is
-   already light. */
 [data-theme="forest"] .hero-visual {
   background-image:
     linear-gradient(180deg, rgba(244, 241, 230, 0.35) 0%, rgba(244, 241, 230, 0.8) 70%, var(--color-bg) 100%),
@@ -329,8 +211,6 @@
   background-position: center 40%;
 }
 
-/* ::selection and scrollbar tuned per-theme so light mode doesn't inherit
-   the dark themes' near-black scrollbar track. */
 [data-theme="forest"] ::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -341,331 +221,20 @@
 [data-theme="forest"] ::-webkit-scrollbar-thumb:hover {
   background: #c7c0a5;
 }
-
-/* ------------------------------------------------------------------ */
-/*  "Arctic" theme — icy blue-gray + cyan/white, crisp and cool        */
-/* ------------------------------------------------------------------ */
-[data-theme="arctic"] {
-  --color-bg: #0a1220;
-  --color-bg-soft: #0c1526;
-  --color-panel: #101c30;
-  --color-panel-2: #14223a;
-  --color-line: rgba(148, 197, 224, 0.16);
-  --color-line-strong: rgba(148, 197, 224, 0.28);
-
-  --color-fg: #eaf4fb;
-  --color-muted: #8fa9c2;
-  --color-faint: #566d85;
-
-  --color-accent: #38bdf8;
-  --color-accent-rgb: 56, 189, 248;
-  --color-accent-soft: #7dd3fc;
-  --color-cyan: #a5f3fc;
-  --color-amber: #fbbf24;
-  --color-rose: #fb7185;
-
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-
-  --shadow-glow: 0 0 0 1px rgba(56, 189, 248, 0.25), 0 0 28px -6px rgba(56, 189, 248, 0.45);
+[data-theme="forest"] ::selection {
+  color: #1a1a1a;
 }
 
-[data-theme="arctic"] .text-gradient {
-  background: linear-gradient(100deg, var(--color-fg) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+/* ==================================================================== */
+/*  LIGHT-MODE VARIANTS — one per theme (Forest already IS the light    */
+/*  default above, so it gets a DARK variant instead here). These have  */
+/*  higher specificity than the base blocks above, so they safely win   */
+/*  whenever [data-mode] matches.                                       */
+/* ==================================================================== */
 
-/* Frosty mountain + king silhouette behind the hero — see hero-arctic-bg.svg */
-[data-theme="arctic"] .hero-arctic-bg {
-  background-image: url("/hero-arctic-bg.svg");
-  background-repeat: no-repeat;
-  background-position: right bottom;
-  background-size: contain;
-}
-
-/* ------------------------------------------------------------------ */
-/*  "Arctic Frost" theme — dark blue-gray + icy cyan/white, crisp      */
-/* ------------------------------------------------------------------ */
-[data-theme="arctic"] {
-  --color-bg: #0a1520;
-  --color-bg-soft: #081019;
-  --color-panel: #0f1e2b;
-  --color-panel-2: #142737;
-  --color-line: rgba(125, 211, 252, 0.14);
-  --color-line-strong: rgba(125, 211, 252, 0.24);
-
-  --color-fg: #eaf6ff;
-  --color-muted: #8fb4cc;
-  --color-faint: #52738a;
-
-  --color-accent: #7dd3fc;
-  --color-accent-rgb: 125, 211, 252;
-  --color-accent-soft: #a5f3fc;
-  --color-cyan: #67e8f9;
-  --color-amber: #fbbf24;
-  --color-rose: #fb7185;
-
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-
-  --shadow-glow: 0 0 0 1px rgba(125, 211, 252, 0.25), 0 0 28px -6px rgba(125, 211, 252, 0.45);
-}
-
-@layer base {
-  * {
-    border-color: var(--color-line);
-  }
-
-  html {
-    color-scheme: dark;
-    scroll-behavior: smooth;
-  }
-
-  body {
-    background-color: var(--color-bg);
-    color: var(--color-fg);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-
-  ::selection {
-    background: rgba(var(--color-accent-rgb), 0.28);
-    color: #ffffff;
-  }
-
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #1b2027;
-    border-radius: 999px;
-    border: 2px solid var(--color-bg);
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #262d36;
-  }
-}
-
-/* ------------------------------------------------------------------ */
-/*  Utilities                                                          */
-/* ------------------------------------------------------------------ */
-@layer utilities {
-  .font-mono {
-    font-family: var(--font-mono);
-  }
-
-  /* faint grid + dot field used behind the hero / dashboards */
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 56px 56px;
-  }
-
-  .bg-dots {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-    background-size: 22px 22px;
-  }
-
-  .mask-fade-b {
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
-  }
-
-  .text-gradient {
-    color: var(--color-accent);
-  }
-
-  .glow-accent {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .panel {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)) ,
-      var(--color-panel);
-    border: 1px solid var(--color-line);
-  }
-
-  .ring-focus:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px rgba(var(--color-accent-rgb), 0.5);
-  }
-
-  @keyframes pulse-dot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.35; transform: scale(0.8); }
-  }
-  .animate-pulse-dot {
-    animation: pulse-dot 1.6s ease-in-out infinite;
-  }
-
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-rise {
-    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  /* ---- gamer hero fx ---- */
-  .text-glow {
-    text-shadow: 0 0 28px rgba(var(--color-accent-rgb), 0.55), 0 0 4px rgba(var(--color-accent-rgb), 0.4);
-  }
-  .neon-ring {
-    box-shadow:
-      0 0 0 1px rgba(var(--color-accent-rgb), 0.3),
-      0 0 50px -12px rgba(var(--color-accent-rgb), 0.55),
-      inset 0 0 40px -24px rgba(34, 211, 238, 0.5);
-  }
-
-  @keyframes float-y {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-14px); }
-  }
-  .animate-float { animation: float-y 6s ease-in-out infinite; }
-  .animate-float-slow { animation: float-y 9s ease-in-out infinite; }
-
-  @keyframes glow-pulse {
-    0%, 100% { opacity: 0.45; }
-    50% { opacity: 1; }
-  }
-  .animate-glow { animation: glow-pulse 3.2s ease-in-out infinite; }
-
-  @keyframes spin-slow { to { transform: rotate(360deg); } }
-  .animate-spin-slow { animation: spin-slow 16s linear infinite; }
-
-  @keyframes grid-pan {
-    from { background-position: 0 0; }
-    to { background-position: 56px 56px; }
-  }
-  .animate-grid { animation: grid-pan 7s linear infinite; }
-
-  @keyframes bar-fill { from { width: 0 !important; } }
-  .animate-bar { animation: bar-fill 1.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-  /* indeterminate progress bar (used on loading screens) */
-  @keyframes indeterminate {
-    0% { left: -45%; width: 45%; }
-    50% { left: 25%; width: 55%; }
-    100% { left: 100%; width: 45%; }
-  }
-  .animate-indeterminate {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    border-radius: 999px;
-    animation: indeterminate 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
-
-  @keyframes shimmer {
-    100% { transform: translateX(100%); }
-  }
-  .skeleton {
-    position: relative;
-    overflow: hidden;
-    background: var(--color-panel-2);
-  }
-  .skeleton::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-    animation: shimmer 1.4s infinite;
-  }
-
-  /* ---- draggable floating chess-piece particles (hero background) ---- */
-  @keyframes particle-rise {
-    from { transform: translateY(0) rotate(0deg); }
-    to   { transform: translateY(-110vh) rotate(20deg); }
-  }
-  .particle-piece {
-    position: absolute;
-    color: var(--color-accent);
-    /* more visible than a faint background texture, still reads as ambient */
-    opacity: 0.32;
-    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.45));
-    animation-name: particle-rise;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    user-select: none;
-    cursor: grab;
-    pointer-events: auto;
-  }
-  .particle-piece.dragging {
-    animation: none;
-    opacity: 0.95;
-    cursor: grabbing;
-    z-index: 50;
-    transition: none;
-    /* ~15%+ stronger glow than the resting pieces, plus an outer halo
-       the resting pieces don't have, so the held piece clearly stands out */
-    filter:
-      drop-shadow(0 0 9.5px rgba(var(--color-accent-rgb), 0.52))
-      drop-shadow(0 0 20px rgba(var(--color-accent-rgb), 0.28));
-  }
-
-  /* ---- glow hover for cards / buttons (optional utilities) ---- */
-  .glow-card {
-    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-  }
-  .glow-card:hover {
-    border-color: rgba(var(--color-accent-rgb), 0.5);
-    box-shadow: 0 0 24px rgba(var(--color-accent-rgb), 0.22), 0 0 48px rgba(var(--color-accent-rgb), 0.1);
-    transform: translateY(-3px);
-  }
-  .glow-btn {
-    transition: box-shadow 0.25s ease, transform 0.2s ease;
-  }
-  .glow-btn:hover {
-    box-shadow: 0 0 18px rgba(var(--color-accent-rgb), 0.55), 0 0 36px rgba(var(--color-accent-rgb), 0.28);
-    transform: translateY(-1px);
-  }
-  .glow-btn:active {
-    transform: translateY(0);
-  }
-
-  /* ---- suppress Google Translate's default banner/UI — we drive
-     translation through our own dropdown in LanguageSwitcher ---- */
-  .goog-te-banner-frame,
-  .goog-te-balloon-frame,
-  .goog-tooltip,
-  .goog-te-gadget-icon,
-  .skiptranslate {
-    display: none !important;
-  }
-  iframe.goog-te-banner-frame,
-  iframe.skiptranslate {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-  }
-  body {
-    top: 0 !important;
-    position: static !important;
-  }
-  .goog-text-highlight {
-    background: none !important;
-    box-shadow: none !important;
-  }
-
-
-  /* ------------------------------------------------------------------ */
-/*  Light-mode variants — one per theme (Forest already IS the light   */
-/*  default, so it gets a DARK variant instead). Higher specificity    */
-/*  than the base theme blocks above, so these safely win when active. */
-/* ------------------------------------------------------------------ */
-
-/* Terminal — light */
-:root:not([data-theme])[data-mode="light"] {
+/* Terminal — light (terminal has no [data-theme] attr, it's the base) */
+html:not([data-theme])[data-mode="light"],
+html[data-theme="terminal"][data-mode="light"] {
   color-scheme: light;
   --color-bg: #f7faf8;
   --color-bg-soft: #eef4f0;
@@ -774,7 +343,7 @@
   --color-rose: #be123c;
 }
 
-/* Forest — dark (Forest's own block above stays as its light default) */
+/* Forest — dark (Forest's base block above is already its light default) */
 [data-theme="forest"][data-mode="dark"] {
   color-scheme: dark;
   --color-bg: #10160f;
@@ -795,4 +364,238 @@
   --color-amber: #d9a84e;
   --color-rose: #d9705f;
 }
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(var(--color-accent-rgb), 0.28);
+    color: #ffffff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1b2027;
+    border-radius: 999px;
+    border: 2px solid var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #262d36;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Utilities                                                          */
+/* ------------------------------------------------------------------ */
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  }
+
+  .text-gradient {
+    color: var(--color-accent);
+  }
+
+  .glow-accent {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)) ,
+      var(--color-panel);
+    border: 1px solid var(--color-line);
+  }
+
+  .ring-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px rgba(var(--color-accent-rgb), 0.5);
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.8); }
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-rise {
+    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 28px rgba(var(--color-accent-rgb), 0.55), 0 0 4px rgba(var(--color-accent-rgb), 0.4);
+  }
+  .neon-ring {
+    box-shadow:
+      0 0 0 1px rgba(var(--color-accent-rgb), 0.3),
+      0 0 50px -12px rgba(var(--color-accent-rgb), 0.55),
+      inset 0 0 40px -24px rgba(34, 211, 238, 0.5);
+  }
+
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  .animate-float { animation: float-y 6s ease-in-out infinite; }
+  .animate-float-slow { animation: float-y 9s ease-in-out infinite; }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 1; }
+  }
+  .animate-glow { animation: glow-pulse 3.2s ease-in-out infinite; }
+
+  @keyframes spin-slow { to { transform: rotate(360deg); } }
+  .animate-spin-slow { animation: spin-slow 16s linear infinite; }
+
+  @keyframes grid-pan {
+    from { background-position: 0 0; }
+    to { background-position: 56px 56px; }
+  }
+  .animate-grid { animation: grid-pan 7s linear infinite; }
+
+  @keyframes bar-fill { from { width: 0 !important; } }
+  .animate-bar { animation: bar-fill 1.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  @keyframes indeterminate {
+    0% { left: -45%; width: 45%; }
+    50% { left: 25%; width: 55%; }
+    100% { left: 100%; width: 45%; }
+  }
+  .animate-indeterminate {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    animation: indeterminate 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-panel-2);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+
+  @keyframes particle-rise {
+    from { transform: translateY(0) rotate(0deg); }
+    to   { transform: translateY(-110vh) rotate(20deg); }
+  }
+  .particle-piece {
+    position: absolute;
+    color: var(--color-accent);
+    opacity: 0.32;
+    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.45));
+    animation-name: particle-rise;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    user-select: none;
+    cursor: grab;
+    pointer-events: auto;
+  }
+  .particle-piece.dragging {
+    animation: none;
+    opacity: 0.95;
+    cursor: grabbing;
+    z-index: 50;
+    transition: none;
+    filter:
+      drop-shadow(0 0 9.5px rgba(var(--color-accent-rgb), 0.52))
+      drop-shadow(0 0 20px rgba(var(--color-accent-rgb), 0.28));
+  }
+
+  .glow-card {
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  }
+  .glow-card:hover {
+    border-color: rgba(var(--color-accent-rgb), 0.5);
+    box-shadow: 0 0 24px rgba(var(--color-accent-rgb), 0.22), 0 0 48px rgba(var(--color-accent-rgb), 0.1);
+    transform: translateY(-3px);
+  }
+  .glow-btn {
+    transition: box-shadow 0.25s ease, transform 0.2s ease;
+  }
+  .glow-btn:hover {
+    box-shadow: 0 0 18px rgba(var(--color-accent-rgb), 0.55), 0 0 36px rgba(var(--color-accent-rgb), 0.28);
+    transform: translateY(-1px);
+  }
+  .glow-btn:active {
+    transform: translateY(0);
+  }
+
+  .goog-te-banner-frame,
+  .goog-te-balloon-frame,
+  .goog-tooltip,
+  .goog-te-gadget-icon,
+  .skiptranslate {
+    display: none !important;
+  }
+  iframe.goog-te-banner-frame,
+  iframe.skiptranslate {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+  }
+  body {
+    top: 0 !important;
+    position: static !important;
+  }
+  .goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+  }
 }
