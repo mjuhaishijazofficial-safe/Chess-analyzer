@@ -128,7 +128,7 @@ async function PlayerHud() {
   ]);
   return (
     <div className="relative">
-      <div className="relative overflow-hidden rounded-3xl border border-line bg-[#0b0e13]/90 p-6 neon-ring backdrop-blur">
+      <div className="relative overflow-hidden rounded-3xl border border-line bg-panel/90 p-6 neon-ring backdrop-blur">
         <div className="relative flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl border border-accent/40 bg-panel-2 text-2xl text-accent">N</div>
           <div>
@@ -164,7 +164,7 @@ function PlayerRankBlock({ rank, player }: { rank: number; player: { username: s
 
 function PlayerHudSkeleton() {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-line bg-[#0b0e13]/90 p-6 backdrop-blur">
+    <div className="relative overflow-hidden rounded-3xl border border-line bg-panel/90 p-6 backdrop-blur">
       <div className="flex items-center gap-3">
         <div className="h-12 w-12 animate-pulse rounded-2xl bg-panel-2" />
         <div className="space-y-2">
