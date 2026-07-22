@@ -27,7 +27,22 @@ const THEME_LABEL: Record<Theme, { name: string; blurb: string }> = {
   club: { name: "Club", blurb: "Warm wooden chess-club look — gold accents, serif headings." },
 };
 
+const TABS = [
+  { key: "theme", label: "Interface Theme" },
+  { key: "board", label: "Board Color" },
+  { key: "pieces", label: "Piece Style" },
+  { key: "sound", label: "Sound Effects" },
+  { key: "analysis", label: "Analysis Speed" },
+] as const;
+type TabKey = (typeof TABS)[number]["key"];
+
+// Tabs whose content is affected by the live board preview on the right,
+// so we know when to show it.
+const PREVIEW_TABS: TabKey[] = ["board", "pieces"];
+
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<TabKey>("theme");
+
   const [selected, setSelected] = useState<PieceSet>("cburnett");
   const [boardSelected, setBoardSelected] = useState<BoardThemeName>("slate");
   const [soundOn, setSoundOn] = useState(true);
@@ -71,169 +86,218 @@ export default function SettingsPage() {
     setInterfaceTheme(next);
   }
 
+  const showPreview = PREVIEW_TABS.includes(activeTab);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_280px]">
-        <div>
-          <h1 className="mb-6 text-2xl font-bold text-fg">Interface Theme</h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {THEMES.map((t) => (
-              <button
-                key={t}
-                onClick={() => chooseInterfaceTheme(t)}
-                className={`rounded-xl border p-4 text-left transition ${
-                  interfaceTheme === t
-                    ? "border-accent bg-accent/10"
-                    : "border-line bg-panel hover:border-line-strong"
-                }`}
-              >
-                <p className="text-sm font-semibold text-fg">{THEME_LABEL[t].name}</p>
-                <p className="mt-1 text-sm text-muted">{THEME_LABEL[t].blurb}</p>
-              </button>
-            ))}
-          </div>
+      <h1 className="mb-8 text-2xl font-bold text-fg">Settings</h1>
 
-          <h1 className="mb-6 mt-12 text-2xl font-bold text-fg">Board Color</h1>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {BOARD_THEMES.map((t) => (
-              <button
-                key={t.name}
-                onClick={() => chooseBoard(t.name)}
-                className={`rounded-xl border p-3 text-center transition ${
-                  boardSelected === t.name
-                    ? "border-accent bg-accent/10"
-                    : "border-line bg-panel hover:border-line-strong"
-                }`}
-              >
-                <div className="mx-auto mb-2 grid h-16 w-16 grid-cols-2 grid-rows-2 overflow-hidden rounded-md border border-line">
-                  <div style={{ background: t.light }} />
-                  <div style={{ background: t.dark }} />
-                  <div style={{ background: t.dark }} />
-                  <div style={{ background: t.light }} />
-                </div>
-                <span className="text-sm capitalize text-fg">{t.name}</span>
-              </button>
-            ))}
-          </div>
-
-          <h1 className="mb-6 mt-12 text-2xl font-bold text-fg">Piece Style</h1>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {PIECE_SETS.map((set) => (
-              <button
-                key={set}
-                onClick={() => choose(set)}
-                className={`rounded-xl border p-4 text-center transition ${
-                  selected === set
-                    ? "border-accent bg-accent/10"
-                    : "border-line bg-panel hover:border-line-strong"
-                }`}
-              >
-                <Image
-                  src={`https://lichess1.org/assets/piece/${set}/wN.svg`}
-                  alt={set}
-                  width={64}
-                  height={64}
-                  className="mx-auto mb-2 h-16 w-16"
-                />
-                <span className="text-sm capitalize text-fg">{set}</span>
-              </button>
-            ))}
-          </div>
-          <h1 className="mb-6 mt-12 text-2xl font-bold text-fg">Sound Effects</h1>
-          <div className="flex items-center justify-between rounded-xl border border-line bg-panel p-4">
-            <div>
-              <p className="text-sm font-medium text-fg">Move &amp; capture sounds</p>
-              <p className="mt-0.5 text-sm text-muted">
-                Plays a click on moves, a thud on captures, and an alert on check.
-              </p>
-            </div>
+      <div
+        className={`grid grid-cols-1 gap-8 ${
+          showPreview ? "lg:grid-cols-[220px_1fr_280px]" : "lg:grid-cols-[220px_1fr]"
+        }`}
+      >
+        {/* Category list */}
+        <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+          {TABS.map((tab) => (
             <button
-              role="switch"
-              aria-checked={soundOn}
-              onClick={toggleSound}
-              className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
-                soundOn ? "border-accent bg-accent/80" : "border-line bg-panel-2"
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`shrink-0 rounded-lg px-4 py-2.5 text-left text-sm font-medium transition lg:w-full ${
+                activeTab === tab.key
+                  ? "bg-accent/15 text-accent"
+                  : "text-muted hover:bg-panel hover:text-fg"
               }`}
             >
-              <span
-                className="absolute top-0.5 rounded-full bg-white shadow transition-transform"
-                style={{
-                  height: "1.375rem",
-                  width: "1.375rem",
-                  transform: soundOn ? "translateX(22px)" : "translateX(2px)",
-                }}
-              />
+              {tab.label}
             </button>
-          </div>
+          ))}
+        </nav>
 
-          {soundOn && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                onClick={playMoveSound}
-                className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg hover:border-line-strong"
-              >
-                ▶ Move
-              </button>
-              <button
-                onClick={playCaptureSound}
-                className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg hover:border-line-strong"
-              >
-                ▶ Capture
-              </button>
-              <button
-                onClick={playCheckSound}
-                className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg hover:border-line-strong"
-              >
-                ▶ Check
-              </button>
+        {/* Active section */}
+        <div>
+          {activeTab === "theme" && (
+            <div>
+              <h2 className="mb-6 text-xl font-semibold text-fg">Interface Theme</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {THEMES.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => chooseInterfaceTheme(t)}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      interfaceTheme === t
+                        ? "border-accent bg-accent/10"
+                        : "border-line bg-panel hover:border-line-strong"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold text-fg">{THEME_LABEL[t].name}</p>
+                    <p className="mt-1 text-sm text-muted">{THEME_LABEL[t].blurb}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          <h1 className="mb-2 mt-12 text-2xl font-bold text-fg">Analysis Speed</h1>
-          <p className="mb-6 text-sm text-muted">
-            How long Stockfish thinks per position in Game Review and Puzzles.
-            Balanced is fast enough for everyday review; Deep is slower but stronger.
-          </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {ANALYSIS_DEPTHS.map((d) => (
-              <button
-                key={d.value}
-                onClick={() => chooseSpeed(d.value)}
-                className={`rounded-xl border p-4 text-left transition ${
-                  speed === d.value
-                    ? "border-accent bg-accent/10"
-                    : "border-line bg-panel hover:border-line-strong"
-                }`}
-              >
-                <p className="text-sm font-semibold text-fg">
-                  {d.label}
-                  {d.value === "balanced" && (
-                    <span className="ml-2 text-xs font-normal text-muted">Default</span>
-                  )}
-                </p>
-                <p className="mt-1 text-sm text-muted">{d.blurb}</p>
-              </button>
-            ))}
-          </div>
+          {activeTab === "board" && (
+            <div>
+              <h2 className="mb-6 text-xl font-semibold text-fg">Board Color</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {BOARD_THEMES.map((t) => (
+                  <button
+                    key={t.name}
+                    onClick={() => chooseBoard(t.name)}
+                    className={`rounded-xl border p-3 text-center transition ${
+                      boardSelected === t.name
+                        ? "border-accent bg-accent/10"
+                        : "border-line bg-panel hover:border-line-strong"
+                    }`}
+                  >
+                    <div className="mx-auto mb-2 grid h-16 w-16 grid-cols-2 grid-rows-2 overflow-hidden rounded-md border border-line">
+                      <div style={{ background: t.light }} />
+                      <div style={{ background: t.dark }} />
+                      <div style={{ background: t.dark }} />
+                      <div style={{ background: t.light }} />
+                    </div>
+                    <span className="text-sm capitalize text-fg">{t.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "pieces" && (
+            <div>
+              <h2 className="mb-6 text-xl font-semibold text-fg">Piece Style</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {PIECE_SETS.map((set) => (
+                  <button
+                    key={set}
+                    onClick={() => choose(set)}
+                    className={`rounded-xl border p-4 text-center transition ${
+                      selected === set
+                        ? "border-accent bg-accent/10"
+                        : "border-line bg-panel hover:border-line-strong"
+                    }`}
+                  >
+                    <Image
+                      src={`https://lichess1.org/assets/piece/${set}/wN.svg`}
+                      alt={set}
+                      width={64}
+                      height={64}
+                      className="mx-auto mb-2 h-16 w-16"
+                    />
+                    <span className="text-sm capitalize text-fg">{set}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "sound" && (
+            <div>
+              <h2 className="mb-6 text-xl font-semibold text-fg">Sound Effects</h2>
+              <div className="flex items-center justify-between rounded-xl border border-line bg-panel p-4">
+                <div>
+                  <p className="text-sm font-medium text-fg">Move &amp; capture sounds</p>
+                  <p className="mt-0.5 text-sm text-muted">
+                    Plays a click on moves, a thud on captures, and an alert on check.
+                  </p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={soundOn}
+                  onClick={toggleSound}
+                  className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
+                    soundOn ? "border-accent bg-accent/80" : "border-line bg-panel-2"
+                  }`}
+                >
+                  <span
+                    className="absolute top-0.5 rounded-full bg-white shadow transition-transform"
+                    style={{
+                      height: "1.375rem",
+                      width: "1.375rem",
+                      transform: soundOn ? "translateX(22px)" : "translateX(2px)",
+                    }}
+                  />
+                </button>
+              </div>
+
+              {soundOn && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={playMoveSound}
+                    className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg hover:border-line-strong"
+                  >
+                    ▶ Move
+                  </button>
+                  <button
+                    onClick={playCaptureSound}
+                    className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg hover:border-line-strong"
+                  >
+                    ▶ Capture
+                  </button>
+                  <button
+                    onClick={playCheckSound}
+                    className="rounded-lg border border-line bg-panel px-3 py-2 text-sm text-fg hover:border-line-strong"
+                  >
+                    ▶ Check
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "analysis" && (
+            <div>
+              <h2 className="mb-2 text-xl font-semibold text-fg">Analysis Speed</h2>
+              <p className="mb-6 text-sm text-muted">
+                How long Stockfish thinks per position in Game Review and Puzzles.
+                Balanced is fast enough for everyday review; Deep is slower but stronger.
+              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {ANALYSIS_DEPTHS.map((d) => (
+                  <button
+                    key={d.value}
+                    onClick={() => chooseSpeed(d.value)}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      speed === d.value
+                        ? "border-accent bg-accent/10"
+                        : "border-line bg-panel hover:border-line-strong"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold text-fg">
+                      {d.label}
+                      {d.value === "balanced" && (
+                        <span className="ml-2 text-xs font-normal text-muted">Default</span>
+                      )}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">{d.blurb}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* live preview */}
-        <div className="lg:sticky lg:top-8 lg:self-start">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wide text-muted">
-            Preview
-          </p>
-          <div className="w-full max-w-[280px]">
-            <Board
-              fen={PREVIEW_FEN}
-              themeOverride={previewTheme}
-              pieceSetOverride={selected}
-            />
+        {/* live preview — only shown for board/pieces, since that's what it previews */}
+        {showPreview && (
+          <div className="lg:sticky lg:top-8 lg:self-start">
+            <p className="mb-3 text-sm font-medium uppercase tracking-wide text-muted">
+              Preview
+            </p>
+            <div className="w-full max-w-[280px]">
+              <Board
+                fen={PREVIEW_FEN}
+                themeOverride={previewTheme}
+                pieceSetOverride={selected}
+              />
+            </div>
+            <p className="mt-3 text-sm text-muted">
+              <span className="capitalize">{previewTheme.name}</span> board ·{" "}
+              <span className="capitalize">{selected}</span> pieces
+            </p>
           </div>
-          <p className="mt-3 text-sm text-muted">
-            <span className="capitalize">{previewTheme.name}</span> board ·{" "}
-            <span className="capitalize">{selected}</span> pieces
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );
