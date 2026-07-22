@@ -14,6 +14,8 @@ import {
   type BotGameSnapshot,
 } from "@/lib/bot";
 
+const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 export default function PlayPage() {
   const [started, setStarted] = useState(false);
   const [elo, setElo] = useState(1200);
@@ -24,6 +26,12 @@ export default function PlayPage() {
   const [snapshot, setSnapshot] = useState<BotGameSnapshot | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
+  // NEW: which ply we're looking at. null = "live" (always tracks the
+  // current position, including moves as they land). A number = the user
+  // stepped back to review an earlier position.
+  const [viewPly, setViewPly] = useState<number | null>(null);
+  const [autoPlaying, setAutoPlaying] = useState(false);
+
   // Tear down the engine + game when leaving the page.
   useEffect(() => {
     return () => {
@@ -31,6 +39,24 @@ export default function PlayPage() {
       engineRef.current?.destroy();
     };
   }, []);
+
+  // Auto-play: step forward every 700ms while playing, stop at the end.
+  useEffect(() => {
+    if (!autoPlaying || !snapshot) return;
+    const total = snapshot.history.length;
+    const current = viewPly ?? total;
+    if (current >= total) {
+      setAutoPlaying(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      setViewPly((p) => {
+        const next = (p ?? total) + 1;
+        return next >= total ? null : next; // land on "live" once caught up
+      });
+    }, 700);
+    return () => clearTimeout(t);
+  }, [autoPlaying, viewPly, snapshot]);
 
   function startGame() {
     const engine = new Engine();
@@ -40,6 +66,7 @@ export default function PlayPage() {
     gameRef.current = game;
     setSnapshot(game.snapshot());
     setStarted(true);
+    setViewPly(null);
   }
 
   function newGame() {
@@ -50,11 +77,14 @@ export default function PlayPage() {
     setSnapshot(null);
     setSelected(null);
     setStarted(false);
+    setViewPly(null);
+    setAutoPlaying(false);
   }
 
   function handleSquareClick(square: string) {
     const game = gameRef.current;
     if (!game) return;
+    if (viewPly !== null) return; // reviewing history — moves disabled
 
     if (selected) {
       const legal = game.legalMovesFrom(selected);
@@ -149,12 +179,27 @@ export default function PlayPage() {
     snapshot.status,
   );
 
-  // NEW: derive the last move (from/to squares) so the board can highlight
-  // it — this is what makes a fast bot move visible instead of "invisible".
-  const lastMoveEntry = snapshot.history[snapshot.history.length - 1];
-  const lastMove = lastMoveEntry
-    ? { from: lastMoveEntry.from, to: lastMoveEntry.to }
-    : null;
+  const total = snapshot.history.length;
+  const ply = viewPly ?? total; // 0..total, "total" = live position
+  const isLive = viewPly === null;
+
+  // Position + last-move highlight for whichever ply we're viewing.
+  // chess.js verbose moves carry `before`/`after` FEN, so no replay needed.
+  const displayFen =
+    ply === 0
+      ? (snapshot.history[0]?.before ?? START_FEN)
+      : (snapshot.history[ply - 1]?.after ?? snapshot.fen);
+  const displayLastMove =
+    ply === 0
+      ? null
+      : { from: snapshot.history[ply - 1].from, to: snapshot.history[ply - 1].to };
+
+  function goTo(p: number) {
+    const clamped = Math.max(0, Math.min(total, p));
+    setAutoPlaying(false);
+    setSelected(null);
+    setViewPly(clamped >= total ? null : clamped);
+  }
 
   return (
     <div className="mx-auto max-w-md px-4 py-8">
@@ -171,31 +216,101 @@ export default function PlayPage() {
       </div>
 
       <Board
-        fen={snapshot.fen}
+        fen={displayFen}
         orientation={snapshot.humanColor === "b" ? "black" : "white"}
-        lastMove={lastMove}
-        onSquareClick={gameOver ? undefined : handleSquareClick}
-        selectedSquare={selected}
-        legalMoves={selected ? gameRef.current?.legalMovesFrom(selected) : undefined}
+        lastMove={displayLastMove}
+        onSquareClick={gameOver || !isLive ? undefined : handleSquareClick}
+        selectedSquare={isLive ? selected : null}
+        legalMoves={isLive && selected ? gameRef.current?.legalMovesFrom(selected) : undefined}
       />
 
-      {/* NEW: move history — pairs of (white, black) san moves, numbered like a scoresheet */}
-      {snapshot.history.length > 0 && (
+      {/* NEW: playback controls — first / prev / play-pause / next / last + "p/total" counter */}
+      <div className="mt-3 flex items-center justify-center gap-2">
+        <button
+          onClick={() => goTo(0)}
+          disabled={ply === 0}
+          className="px-2 py-1 rounded border border-faint text-faint text-sm disabled:opacity-30"
+          aria-label="First move"
+        >
+          ⏮
+        </button>
+        <button
+          onClick={() => goTo(ply - 1)}
+          disabled={ply === 0}
+          className="px-2 py-1 rounded border border-faint text-faint text-sm disabled:opacity-30"
+          aria-label="Previous move"
+        >
+          ◀
+        </button>
+        <span className="w-16 text-center text-sm text-faint tabular-nums">
+          {ply}/{total}
+        </span>
+        <button
+          onClick={() => setAutoPlaying((a) => !a)}
+          disabled={ply >= total}
+          className="px-3 py-1 rounded border border-faint text-faint text-sm disabled:opacity-30"
+          aria-label={autoPlaying ? "Pause" : "Play"}
+        >
+          {autoPlaying ? "⏸" : "▶"}
+        </button>
+        <button
+          onClick={() => goTo(ply + 1)}
+          disabled={ply === total}
+          className="px-2 py-1 rounded border border-faint text-faint text-sm disabled:opacity-30"
+          aria-label="Next move"
+        >
+          ▶
+        </button>
+        <button
+          onClick={() => goTo(total)}
+          disabled={ply === total}
+          className="px-2 py-1 rounded border border-faint text-faint text-sm disabled:opacity-30"
+          aria-label="Last move (live)"
+        >
+          ⏭
+        </button>
+      </div>
+
+      {/* Move history — current ply highlighted, click any move to jump there */}
+      {total > 0 && (
         <div className="mt-4 max-h-40 overflow-y-auto rounded border border-faint/30 p-2 text-sm leading-6 text-faint">
-          {Array.from({ length: Math.ceil(snapshot.history.length / 2) }).map(
-            (_, i) => {
-              const white = snapshot.history[i * 2];
-              const black = snapshot.history[i * 2 + 1];
-              return (
-                <span key={i} className="mr-3 inline-block">
-                  <span className="mr-1 text-faint/60">{i + 1}.</span>
-                  <span className="mr-2 text-fg">{white?.san}</span>
-                  {black && <span className="text-fg">{black.san}</span>}
-                </span>
-              );
-            },
-          )}
+          {Array.from({ length: Math.ceil(total / 2) }).map((_, i) => {
+            const whiteIdx = i * 2;
+            const blackIdx = i * 2 + 1;
+            const white = snapshot.history[whiteIdx];
+            const black = snapshot.history[blackIdx];
+            return (
+              <span key={i} className="mr-3 inline-block">
+                <span className="mr-1 text-faint/60">{i + 1}.</span>
+                {white && (
+                  <button
+                    onClick={() => goTo(whiteIdx + 1)}
+                    className={`mr-2 ${ply === whiteIdx + 1 ? "text-bg bg-fg px-1 rounded" : "text-fg"}`}
+                  >
+                    {white.san}
+                  </button>
+                )}
+                {black && (
+                  <button
+                    onClick={() => goTo(blackIdx + 1)}
+                    className={ply === blackIdx + 1 ? "text-bg bg-fg px-1 rounded" : "text-fg"}
+                  >
+                    {black.san}
+                  </button>
+                )}
+              </span>
+            );
+          })}
         </div>
+      )}
+
+      {!isLive && (
+        <p className="mt-2 text-center text-xs text-faint">
+          Reviewing move {ply} of {total} —{" "}
+          <button onClick={() => goTo(total)} className="underline">
+            jump to live position
+          </button>
+        </p>
       )}
 
       <div className="mt-6 flex gap-3">
