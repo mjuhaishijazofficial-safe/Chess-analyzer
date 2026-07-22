@@ -1,4 +1,4 @@
-export const THEMES = ["terminal", "club"] as const;
+export const THEMES = ["terminal", "club", "midnight"] as const;
 export type Theme = (typeof THEMES)[number];
 
 const STORAGE_KEY = "chessdeeper-theme";
