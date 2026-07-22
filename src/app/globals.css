@@ -178,6 +178,171 @@
 }
 
 /* ------------------------------------------------------------------ */
+/*  "Forest Nordic" theme — soft cream + forest green, light & calm    */
+/* ------------------------------------------------------------------ */
+[data-theme="forest"] {
+  color-scheme: light;
+
+  --color-bg: #f6f2e7;
+  --color-bg-soft: #efe9d8;
+  --color-panel: #fffdf7;
+  --color-panel-2: #eee7d3;
+  --color-line: rgba(63, 79, 53, 0.14);
+  --color-line-strong: rgba(63, 79, 53, 0.24);
+
+  --color-fg: #24301f;
+  --color-muted: #5c6b50;
+  --color-faint: #8b9a7c;
+
+  --color-accent: #3f6b3f;
+  --color-accent-rgb: 63, 107, 63;
+  --color-accent-soft: #598c58;
+  --color-cyan: #4a7c72;
+  --color-amber: #b8863b;
+  --color-rose: #b1584a;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(63, 107, 63, 0.2), 0 0 28px -6px rgba(63, 107, 63, 0.35);
+}
+
+[data-theme="forest"] ::selection {
+  color: #1a2416;
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb {
+  border: 2px solid var(--color-bg);
+}
+
+/* ------------------------------------------------------------------ */
+/*  "Forest Sage" theme — light cream + forest green, no photo, just   */
+/*  the palette. The only LIGHT theme, so color-scheme + a few         */
+/*  dark-hardcoded bits (selection text, scrollbar) get overridden too.*/
+/* ------------------------------------------------------------------ */
+[data-theme="forest"] {
+  color-scheme: light;
+
+  --color-bg: #f6f1e6;
+  --color-bg-soft: #efe7d5;
+  --color-panel: #fbf8f0;
+  --color-panel-2: #f0e9d8;
+  --color-line: rgba(43, 35, 24, 0.1);
+  --color-line-strong: rgba(43, 35, 24, 0.18);
+
+  --color-fg: #2b2318;
+  --color-muted: #6b6152;
+  --color-faint: #9a8f7a;
+
+  --color-accent: #4a7c59;
+  --color-accent-rgb: 74, 124, 89;
+  --color-accent-soft: #6fa87f;
+  --color-cyan: #4a7c59;
+  --color-amber: #c9a464;
+  --color-rose: #b5584b;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(74, 124, 89, 0.2), 0 0 28px -6px rgba(74, 124, 89, 0.35);
+}
+[data-theme="forest"] ::selection {
+  color: #1a1a1a;
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb {
+  background: #d8cfb8;
+  border: 2px solid var(--color-bg);
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb:hover {
+  background: #c7bc9e;
+}
+
+/* ------------------------------------------------------------------ */
+/*  "Forest Nomadic" theme — warm cream background + forest green,     */
+/*  the one light theme in the set. No hero photo — pure color/type.   */
+/* ------------------------------------------------------------------ */
+[data-theme="forest"] {
+  color-scheme: light;
+
+  --color-bg: #f6f1e4;
+  --color-bg-soft: #efe8d6;
+  --color-panel: #fbf8ef;
+  --color-panel-2: #f0e9d8;
+  --color-line: rgba(43, 58, 47, 0.12);
+  --color-line-strong: rgba(43, 58, 47, 0.22);
+
+  --color-fg: #263426;
+  --color-muted: #5c6b5e;
+  --color-faint: #8a9a8c;
+
+  --color-accent: #3f7d4f;
+  --color-accent-rgb: 63, 125, 79;
+  --color-accent-soft: #6fae7c;
+  --color-cyan: #4a8f7a;
+  --color-amber: #c8963e;
+  --color-rose: #b5584b;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(63, 125, 79, 0.2), 0 0 28px -6px rgba(63, 125, 79, 0.35);
+}
+
+/* ------------------------------------------------------------------ */
+/*  "Forest Nomadic" theme — soft cream + forest green, the one LIGHT  */
+/*  option among the themes. Overrides color-scheme too.               */
+/* ------------------------------------------------------------------ */
+[data-theme="forest"] {
+  color-scheme: light;
+
+  --color-bg: #f4f1e6;
+  --color-bg-soft: #eee9da;
+  --color-panel: #ffffff;
+  --color-panel-2: #f7f4ea;
+  --color-line: rgba(63, 78, 52, 0.14);
+  --color-line-strong: rgba(63, 78, 52, 0.26);
+
+  --color-fg: #23291f;
+  --color-muted: #5c6753;
+  --color-faint: #8b9480;
+
+  --color-accent: #4d7c4d;
+  --color-accent-rgb: 77, 124, 77;
+  --color-accent-soft: #6b9b5f;
+  --color-cyan: #4c8577;
+  --color-amber: #b8863b;
+  --color-rose: #b5584b;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(77, 124, 77, 0.18), 0 0 28px -6px rgba(77, 124, 77, 0.3);
+}
+
+/* Hero background photo — pine forest lake, bright and calm (Unsplash,
+   free license). Softer overlay than the dark themes since the base is
+   already light. */
+[data-theme="forest"] .hero-visual {
+  background-image:
+    linear-gradient(180deg, rgba(244, 241, 230, 0.35) 0%, rgba(244, 241, 230, 0.8) 70%, var(--color-bg) 100%),
+    url("https://images.unsplash.com/photo-1754976786560-235c0e365f61?fm=jpg&q=70&w=2400&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center 40%;
+}
+
+/* ::selection and scrollbar tuned per-theme so light mode doesn't inherit
+   the dark themes' near-black scrollbar track. */
+[data-theme="forest"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb {
+  background: #d8d2bd;
+  border: 2px solid var(--color-bg);
+}
+[data-theme="forest"] ::-webkit-scrollbar-thumb:hover {
+  background: #c7c0a5;
+}
+
+/* ------------------------------------------------------------------ */
 /*  "Arctic" theme — icy blue-gray + cyan/white, crisp and cool        */
 /* ------------------------------------------------------------------ */
 [data-theme="arctic"] {
