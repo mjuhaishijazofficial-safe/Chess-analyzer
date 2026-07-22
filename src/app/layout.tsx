@@ -68,29 +68,6 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-
-      <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function () {
-        try {
-          var theme = localStorage.getItem("chessdeeper-theme");
-          var mode = localStorage.getItem("chessdeeper-mode");
-          var validThemes = ["terminal","club","midnight","aurora","arctic","forest"];
-          if (theme && validThemes.indexOf(theme) !== -1 && theme !== "terminal") {
-            document.documentElement.setAttribute("data-theme", theme);
-          }
-          if (mode === "dark" || mode === "light") {
-            document.documentElement.setAttribute("data-mode", mode);
-          } else {
-            document.documentElement.setAttribute("data-mode", theme === "forest" ? "light" : "dark");
-          }
-        } catch (e) {}
-      })();
-    `,
-  }}
-/>
-
       <body className="min-h-full flex bg-bg text-fg">
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {children}
