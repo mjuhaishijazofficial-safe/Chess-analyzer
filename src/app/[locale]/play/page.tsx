@@ -11,10 +11,20 @@ import {
   BOT_MAX_ELO,
   clampElo,
   strengthProfileFor,
+  checkSquareOf,
   type BotGameSnapshot,
 } from "@/lib/bot";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+// Unicode glyphs for the promotion picker, keyed by chess.js promotion letter.
+const PROMO_PIECES = ["q", "r", "b", "n"] as const;
+const PROMO_GLYPH: Record<(typeof PROMO_PIECES)[number], { w: string; b: string }> = {
+  q: { w: "♕", b: "♛" },
+  r: { w: "♖", b: "♜" },
+  b: { w: "♗", b: "♝" },
+  n: { w: "♘", b: "♞" },
+};
 
 export default function PlayPage() {
   const [started, setStarted] = useState(false);
@@ -26,13 +36,15 @@ export default function PlayPage() {
   const [snapshot, setSnapshot] = useState<BotGameSnapshot | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  // NEW: which ply we're looking at. null = "live" (always tracks the
-  // current position, including moves as they land). A number = the user
-  // stepped back to review an earlier position.
+  // NEW: when a human move lands a pawn on the last rank, we hold it here
+  // and show a piece picker instead of committing the move as a queen.
+  const [pendingPromotion, setPendingPromotion] = useState<{ from: string; to: string } | null>(
+    null,
+  );
+
   const [viewPly, setViewPly] = useState<number | null>(null);
   const [autoPlaying, setAutoPlaying] = useState(false);
 
-  // Tear down the engine + game when leaving the page.
   useEffect(() => {
     return () => {
       gameRef.current?.destroy();
@@ -40,7 +52,6 @@ export default function PlayPage() {
     };
   }, []);
 
-  // Auto-play: step forward every 700ms while playing, stop at the end.
   useEffect(() => {
     if (!autoPlaying || !snapshot) return;
     const total = snapshot.history.length;
@@ -52,7 +63,7 @@ export default function PlayPage() {
     const t = setTimeout(() => {
       setViewPly((p) => {
         const next = (p ?? total) + 1;
-        return next >= total ? null : next; // land on "live" once caught up
+        return next >= total ? null : next;
       });
     }, 700);
     return () => clearTimeout(t);
@@ -76,6 +87,7 @@ export default function PlayPage() {
     engineRef.current = null;
     setSnapshot(null);
     setSelected(null);
+    setPendingPromotion(null);
     setStarted(false);
     setViewPly(null);
     setAutoPlaying(false);
@@ -84,11 +96,19 @@ export default function PlayPage() {
   function handleSquareClick(square: string) {
     const game = gameRef.current;
     if (!game) return;
-    if (viewPly !== null) return; // reviewing history — moves disabled
+    if (viewPly !== null) return;
+    if (pendingPromotion) return; // waiting on the picker
 
     if (selected) {
       const legal = game.legalMovesFrom(selected);
       if (legal.includes(square)) {
+        // NEW: pawn reaching the last rank → ask which piece instead of
+        // silently promoting to queen.
+        if (game.isPromotionMove(selected, square)) {
+          setPendingPromotion({ from: selected, to: square });
+          setSelected(null);
+          return;
+        }
         void game.humanMove(selected, square);
         setSelected(null);
         return;
@@ -97,6 +117,13 @@ export default function PlayPage() {
 
     const legalFromClicked = game.legalMovesFrom(square);
     setSelected(legalFromClicked.length > 0 ? square : null);
+  }
+
+  function choosePromotion(piece: (typeof PROMO_PIECES)[number]) {
+    const game = gameRef.current;
+    if (!game || !pendingPromotion) return;
+    void game.humanMove(pendingPromotion.from, pendingPromotion.to, piece);
+    setPendingPromotion(null);
   }
 
   // ---------- Setup screen ----------
@@ -160,7 +187,7 @@ export default function PlayPage() {
   }
 
   // ---------- Game screen ----------
-  if (!snapshot) return null; // brief flash while engine boots
+  if (!snapshot) return null;
 
   const statusText: Record<BotGameSnapshot["status"], string> = {
     "free-moves": `Free moves: ${snapshot.freeMovesRemaining} left`,
@@ -180,11 +207,9 @@ export default function PlayPage() {
   );
 
   const total = snapshot.history.length;
-  const ply = viewPly ?? total; // 0..total, "total" = live position
+  const ply = viewPly ?? total;
   const isLive = viewPly === null;
 
-  // Position + last-move highlight for whichever ply we're viewing.
-  // chess.js verbose moves carry `before`/`after` FEN, so no replay needed.
   const displayFen =
     ply === 0
       ? (snapshot.history[0]?.before ?? START_FEN)
@@ -193,6 +218,9 @@ export default function PlayPage() {
     ply === 0
       ? null
       : { from: snapshot.history[ply - 1].from, to: snapshot.history[ply - 1].to };
+
+  // NEW: highlight the king if it's in check in the position being shown.
+  const checkSquare = checkSquareOf(displayFen);
 
   function goTo(p: number) {
     const clamped = Math.max(0, Math.min(total, p));
@@ -215,16 +243,39 @@ export default function PlayPage() {
         )}
       </div>
 
-      <Board
-        fen={displayFen}
-        orientation={snapshot.humanColor === "b" ? "black" : "white"}
-        lastMove={displayLastMove}
-        onSquareClick={gameOver || !isLive ? undefined : handleSquareClick}
-        selectedSquare={isLive ? selected : null}
-        legalMoves={isLive && selected ? gameRef.current?.legalMovesFrom(selected) : undefined}
-      />
+      <div className="relative">
+        <Board
+          fen={displayFen}
+          orientation={snapshot.humanColor === "b" ? "black" : "white"}
+          lastMove={displayLastMove}
+          checkSquare={checkSquare}
+          onSquareClick={gameOver || !isLive ? undefined : handleSquareClick}
+          selectedSquare={isLive ? selected : null}
+          legalMoves={isLive && selected ? gameRef.current?.legalMovesFrom(selected) : undefined}
+        />
 
-      {/* NEW: playback controls — first / prev / play-pause / next / last + "p/total" counter */}
+        {/* NEW: promotion picker overlay */}
+        {pendingPromotion && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-bg/80 backdrop-blur-sm">
+            <div className="rounded-lg border border-faint/40 bg-panel p-4 text-center">
+              <p className="mb-3 text-sm text-faint">Promote to</p>
+              <div className="flex gap-2">
+                {PROMO_PIECES.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => choosePromotion(p)}
+                    className="grid h-12 w-12 place-items-center rounded border border-faint/40 text-3xl hover:bg-panel-2"
+                    aria-label={p}
+                  >
+                    {PROMO_GLYPH[p][snapshot.humanColor]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="mt-3 flex items-center justify-center gap-2">
         <button
           onClick={() => goTo(0)}
@@ -271,7 +322,6 @@ export default function PlayPage() {
         </button>
       </div>
 
-      {/* Move history — current ply highlighted, click any move to jump there */}
       {total > 0 && (
         <div className="mt-4 max-h-40 overflow-y-auto rounded border border-faint/30 p-2 text-sm leading-6 text-faint">
           {Array.from({ length: Math.ceil(total / 2) }).map((_, i) => {

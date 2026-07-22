@@ -44,6 +44,35 @@ function movetimeForElo(elo: number): number {
   return Math.round(300 + t * 2200);
 }
 
+/** True if a pawn move from→to lands on the last rank (needs a promotion choice). Standalone helper — usable before a BotGame move is committed. */
+export function isPromotionMove(fen: string, from: string, to: string): boolean {
+  try {
+    const c = new Chess(fen);
+    return c
+      .moves({ square: from as never, verbose: true })
+      .some((m) => m.to === to && !!m.promotion);
+  } catch {
+    return false;
+  }
+}
+
+/** Square of the king currently in check, or null. Used to highlight it on the board. */
+export function checkSquareOf(fen: string): string | null {
+  try {
+    const c = new Chess(fen);
+    if (!c.isCheck()) return null;
+    const turn = c.turn();
+    for (const row of c.board()) {
+      for (const sq of row) {
+        if (sq && sq.type === "k" && sq.color === turn) return sq.square;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 export type GameStatus =
   | "free-moves"
   | "playing"
@@ -106,6 +135,13 @@ export class BotGame {
 
   legalMovesFrom(square: string): string[] {
     return this.chess.moves({ square: square as never, verbose: true }).map((m) => m.to);
+  }
+
+  /** True if moving from→to is a pawn reaching the last rank — the UI should ask which piece to promote to instead of defaulting to queen. */
+  isPromotionMove(from: string, to: string): boolean {
+    return this.chess
+      .moves({ square: from as never, verbose: true })
+      .some((m) => m.to === to && !!m.promotion);
   }
 
   private emit() {
