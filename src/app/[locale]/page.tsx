@@ -90,7 +90,7 @@ function Feature({ icon, title, body }: { icon: string; title: string; body: str
   return (
     <div className="group relative overflow-hidden panel rounded-2xl p-5 transition hover:border-accent/40">
       <div className="grid h-11 w-11 place-items-center rounded-xl border border-line bg-panel-2 text-xl">{icon}</div>
-      <h2 className="mt-4 text-base font-semibold text-fg">{title}</h2>
+      <h3 className="mt-4 text-base font-semibold text-fg">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
     </div>
   );
