@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Board } from "@/components/board";
 import { PIECE_SETS, getPieceSet, setPieceSet, type PieceSet } from "@/lib/piece-set";
 import { BOARD_THEMES, getBoardTheme, setBoardTheme, type BoardThemeName } from "@/lib/board-theme";
-import { THEMES, getTheme, setTheme, type Theme } from "@/lib/theme";
+import { THEMES, getTheme, setTheme, getMode, setMode, type Theme, type Mode } from "@/lib/theme";
 import {
   isSoundEnabled,
   setSoundEnabled,
@@ -52,13 +52,16 @@ export default function SettingsPage() {
   const [soundOn, setSoundOn] = useState(true);
   const [speed, setSpeed] = useState<AnalysisDepth>("balanced");
   const [interfaceTheme, setInterfaceTheme] = useState<Theme>("terminal");
+  const [mode, setModeState] = useState<Mode>("dark");
 
   useEffect(() => {
     setSelected(getPieceSet());
     setBoardSelected(getBoardTheme().name);
     setSoundOn(isSoundEnabled());
     setSpeed(getAnalysisDepth());
-    setInterfaceTheme(getTheme());
+    const t = getTheme();
+    setInterfaceTheme(t);
+    setModeState(getMode(t));
   }, []);
 
   const previewTheme = BOARD_THEMES.find((t) => t.name === boardSelected) ?? BOARD_THEMES[0];
@@ -85,21 +88,21 @@ export default function SettingsPage() {
     setSpeed(next);
   }
 
+  // Picking a theme keeps whatever light/dark mode is currently active —
+  // setTheme() re-applies the saved mode preference on top of the new theme.
   function chooseInterfaceTheme(next: Theme) {
     setTheme(next);
     setInterfaceTheme(next);
+    setModeState(getMode(next));
   }
 
-  // "Dark / Light" is a quick shortcut on top of the full theme grid below —
-  // Forest Nordic is the only light theme in the set, so the toggle simply
-  // swaps between it and Terminal (the default dark theme). The other 4
-  // themes are still picked individually from the grid, unaffected by this.
-  function isLightTheme(t: Theme): boolean {
-    return t === "forest";
-  }
-
+  // "Dark / Light" toggles the mode of whichever theme is currently active
+  // (every theme has both a dark and a light palette — see globals.css),
+  // rather than jumping to a different theme.
   function toggleDarkLight() {
-    chooseInterfaceTheme(isLightTheme(interfaceTheme) ? "terminal" : "forest");
+    const next: Mode = mode === "light" ? "dark" : "light";
+    setMode(next);
+    setModeState(next);
   }
 
   const showPreview = PREVIEW_TABS.includes(activeTab);
@@ -140,15 +143,17 @@ export default function SettingsPage() {
                 <div>
                   <p className="text-sm font-medium text-fg">Dark / Light mode</p>
                   <p className="mt-0.5 text-sm text-muted">
-                    Quick switch — Dark uses Terminal, Light uses Forest Nordic.
+                    Switches the current theme (
+                    <span className="capitalize">{THEME_LABEL[interfaceTheme].name}</span>) between
+                    its dark and light palette.
                   </p>
                 </div>
                 <button
                   role="switch"
-                  aria-checked={isLightTheme(interfaceTheme)}
+                  aria-checked={mode === "light"}
                   onClick={toggleDarkLight}
                   className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
-                    isLightTheme(interfaceTheme) ? "border-accent bg-accent/80" : "border-line bg-panel-2"
+                    mode === "light" ? "border-accent bg-accent/80" : "border-line bg-panel-2"
                   }`}
                 >
                   <span
@@ -156,7 +161,7 @@ export default function SettingsPage() {
                     style={{
                       height: "1.375rem",
                       width: "1.375rem",
-                      transform: isLightTheme(interfaceTheme) ? "translateX(22px)" : "translateX(2px)",
+                      transform: mode === "light" ? "translateX(22px)" : "translateX(2px)",
                     }}
                   />
                 </button>
