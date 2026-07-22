@@ -26,6 +26,7 @@ const THEME_LABEL: Record<Theme, { name: string; blurb: string }> = {
   terminal: { name: "Terminal", blurb: "Dark engine console — green accents, monospace data." },
   club: { name: "Club", blurb: "Warm wooden chess-club look — gold accents, serif headings." },
   midnight: { name: "Midnight Blue", blurb: "Deep navy with electric-blue accents — classic pro chess-site look." },
+  aurora: { name: "Aurora Dream", blurb: "Deep purple with electric-blue accents — modern, vibrant, energetic." },
 };
 
 const TABS = [

@@ -102,6 +102,41 @@
   --shadow-glow: 0 0 0 1px rgba(59, 130, 246, 0.25), 0 0 28px -6px rgba(59, 130, 246, 0.45);
 }
 
+/* ------------------------------------------------------------------ */
+/*  "Aurora" theme — deep purple + electric blue/magenta, vibrant      */
+/* ------------------------------------------------------------------ */
+[data-theme="aurora"] {
+  --color-bg: #0d0716;
+  --color-bg-soft: #0a0511;
+  --color-panel: #160c26;
+  --color-panel-2: #1c1130;
+  --color-line: rgba(192, 132, 252, 0.16);
+  --color-line-strong: rgba(192, 132, 252, 0.28);
+
+  --color-fg: #f1e9ff;
+  --color-muted: #a894c9;
+  --color-faint: #6b5c8a;
+
+  --color-accent: #c084fc;
+  --color-accent-rgb: 192, 132, 252;
+  --color-accent-soft: #e879f9;
+  --color-cyan: #60a5fa;
+  --color-amber: #fbbf24;
+  --color-rose: #f472b6;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(192, 132, 252, 0.25), 0 0 28px -6px rgba(192, 132, 252, 0.45);
+}
+
+[data-theme="aurora"] .text-gradient {
+  background: linear-gradient(100deg, var(--color-accent) 0%, var(--color-cyan) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @layer base {
   * {
     border-color: var(--color-line);

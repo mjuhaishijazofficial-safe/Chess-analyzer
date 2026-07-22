@@ -1,4 +1,4 @@
-export const THEMES = ["terminal", "club", "midnight"] as const;
+export const THEMES = ["terminal", "club", "midnight", "aurora"] as const;
 export type Theme = (typeof THEMES)[number];
 
 const STORAGE_KEY = "chessdeeper-theme";
@@ -18,7 +18,7 @@ export function setTheme(theme: Theme) {
 
 export function applyTheme(theme: Theme) {
   if (theme === "terminal") {
-    document.documentElement.removeAttribute("data-theme"); // terminal is the unstyled default
+    document.documentElement.removeAttribute("data-theme");
   } else {
     document.documentElement.dataset.theme = theme;
   }
