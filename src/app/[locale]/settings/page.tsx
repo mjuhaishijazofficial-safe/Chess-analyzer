@@ -90,6 +90,18 @@ export default function SettingsPage() {
     setInterfaceTheme(next);
   }
 
+  // "Dark / Light" is a quick shortcut on top of the full theme grid below —
+  // Forest Nordic is the only light theme in the set, so the toggle simply
+  // swaps between it and Terminal (the default dark theme). The other 4
+  // themes are still picked individually from the grid, unaffected by this.
+  function isLightTheme(t: Theme): boolean {
+    return t === "forest";
+  }
+
+  function toggleDarkLight() {
+    chooseInterfaceTheme(isLightTheme(interfaceTheme) ? "terminal" : "forest");
+  }
+
   const showPreview = PREVIEW_TABS.includes(activeTab);
 
   return (
@@ -123,6 +135,33 @@ export default function SettingsPage() {
           {activeTab === "theme" && (
             <div>
               <h2 className="mb-6 text-xl font-semibold text-fg">Interface Theme</h2>
+
+              <div className="mb-6 flex items-center justify-between rounded-xl border border-line bg-panel p-4">
+                <div>
+                  <p className="text-sm font-medium text-fg">Dark / Light mode</p>
+                  <p className="mt-0.5 text-sm text-muted">
+                    Quick switch — Dark uses Terminal, Light uses Forest Nordic.
+                  </p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={isLightTheme(interfaceTheme)}
+                  onClick={toggleDarkLight}
+                  className={`relative h-7 w-12 shrink-0 rounded-full border transition ${
+                    isLightTheme(interfaceTheme) ? "border-accent bg-accent/80" : "border-line bg-panel-2"
+                  }`}
+                >
+                  <span
+                    className="absolute top-0.5 rounded-full bg-white shadow transition-transform"
+                    style={{
+                      height: "1.375rem",
+                      width: "1.375rem",
+                      transform: isLightTheme(interfaceTheme) ? "translateX(22px)" : "translateX(2px)",
+                    }}
+                  />
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {THEMES.map((t) => (
                   <button
