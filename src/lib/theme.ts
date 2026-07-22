@@ -13,6 +13,9 @@ export function getTheme(): Theme {
 export function setTheme(theme: Theme) {
   window.localStorage.setItem(STORAGE_KEY, theme);
   applyTheme(theme);
+  // Re-apply the current light/dark preference so the newly picked theme
+  // shows its own light or dark variant, instead of losing the setting.
+  applyMode(getMode(theme));
 }
 
 export function applyTheme(theme: Theme) {
@@ -21,4 +24,39 @@ export function applyTheme(theme: Theme) {
   } else {
     document.documentElement.dataset.theme = theme;
   }
+}
+
+// ------------------------------------------------------------------
+// Light / Dark mode — independent of *which* theme is picked. Every
+// theme has both a dark and a light palette (see globals.css). This
+// only tracks which one to show. Themes are dark by default, except
+// Forest, which is light by default.
+// ------------------------------------------------------------------
+export type Mode = "dark" | "light";
+const MODE_STORAGE_KEY = "chessdeeper-mode";
+
+/** The mode a theme shows if the user has never toggled it. */
+export function naturalMode(theme: Theme): Mode {
+  return theme === "forest" ? "light" : "dark";
+}
+
+function savedMode(): Mode | null {
+  if (typeof window === "undefined") return null;
+  const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
+  return saved === "dark" || saved === "light" ? saved : null;
+}
+
+/** Current mode for a theme — the user's saved override if they've ever
+ *  toggled it, otherwise that theme's natural default. */
+export function getMode(theme?: Theme): Mode {
+  return savedMode() ?? naturalMode(theme ?? getTheme());
+}
+
+export function setMode(mode: Mode) {
+  window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+  applyMode(mode);
+}
+
+export function applyMode(mode: Mode) {
+  document.documentElement.dataset.mode = mode;
 }
