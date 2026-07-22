@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Board } from "@/components/board";
 import { PIECE_SETS, getPieceSet, setPieceSet, type PieceSet } from "@/lib/piece-set";
 import { BOARD_THEMES, getBoardTheme, setBoardTheme, type BoardThemeName } from "@/lib/board-theme";
+import { THEMES, getTheme, setTheme, type Theme } from "@/lib/theme";
 import {
   isSoundEnabled,
   setSoundEnabled,
@@ -21,17 +22,24 @@ import {
 
 const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+const THEME_LABEL: Record<Theme, { name: string; blurb: string }> = {
+  terminal: { name: "Terminal", blurb: "Dark engine console — green accents, monospace data." },
+  club: { name: "Club", blurb: "Warm wooden chess-club look — gold accents, serif headings." },
+};
+
 export default function SettingsPage() {
   const [selected, setSelected] = useState<PieceSet>("cburnett");
   const [boardSelected, setBoardSelected] = useState<BoardThemeName>("slate");
   const [soundOn, setSoundOn] = useState(true);
   const [speed, setSpeed] = useState<AnalysisDepth>("balanced");
+  const [interfaceTheme, setInterfaceTheme] = useState<Theme>("terminal");
 
   useEffect(() => {
     setSelected(getPieceSet());
     setBoardSelected(getBoardTheme().name);
     setSoundOn(isSoundEnabled());
     setSpeed(getAnalysisDepth());
+    setInterfaceTheme(getTheme());
   }, []);
 
   const previewTheme = BOARD_THEMES.find((t) => t.name === boardSelected) ?? BOARD_THEMES[0];
@@ -58,11 +66,34 @@ export default function SettingsPage() {
     setSpeed(next);
   }
 
+  function chooseInterfaceTheme(next: Theme) {
+    setTheme(next);
+    setInterfaceTheme(next);
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_280px]">
         <div>
-          <h1 className="mb-6 text-2xl font-bold text-fg">Board Color</h1>
+          <h1 className="mb-6 text-2xl font-bold text-fg">Interface Theme</h1>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {THEMES.map((t) => (
+              <button
+                key={t}
+                onClick={() => chooseInterfaceTheme(t)}
+                className={`rounded-xl border p-4 text-left transition ${
+                  interfaceTheme === t
+                    ? "border-accent bg-accent/10"
+                    : "border-line bg-panel hover:border-line-strong"
+                }`}
+              >
+                <p className="text-sm font-semibold text-fg">{THEME_LABEL[t].name}</p>
+                <p className="mt-1 text-sm text-muted">{THEME_LABEL[t].blurb}</p>
+              </button>
+            ))}
+          </div>
+
+          <h1 className="mb-6 mt-12 text-2xl font-bold text-fg">Board Color</h1>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {BOARD_THEMES.map((t) => (
               <button

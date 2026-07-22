@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
 import { RegisterServiceWorker } from "@/components/register-sw";
+import { ThemeInit } from "@/components/theme-init";
 import { SUPPORTED_LOCALES } from "@/i18n/request";
 
 export function generateStaticParams() {
@@ -28,6 +29,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider>
+      <ThemeInit />
       <RegisterServiceWorker />
       <SiteSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
