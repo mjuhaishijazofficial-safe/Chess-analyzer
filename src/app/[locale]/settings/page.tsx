@@ -27,6 +27,7 @@ const THEME_LABEL: Record<Theme, { name: string; blurb: string }> = {
   club: { name: "Club", blurb: "Warm wooden chess-club look — gold accents, serif headings." },
   midnight: { name: "Midnight Blue", blurb: "Deep navy with electric-blue accents — classic pro chess-site look." },
   aurora: { name: "Aurora Dream", blurb: "Deep purple with electric-blue accents — modern, vibrant, energetic." },
+  arctic: { name: "Arctic Frost", blurb: "Icy blue-gray with a misty mountain hero backdrop." },
 };
 
 const TABS = [

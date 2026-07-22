@@ -1,4 +1,4 @@
-export const THEMES = ["terminal", "club", "midnight", "aurora"] as const;
+export const THEMES = ["terminal", "club", "midnight", "aurora", "arctic"] as const;
 export type Theme = (typeof THEMES)[number];
 
 const STORAGE_KEY = "chessdeeper-theme";
@@ -10,7 +10,6 @@ export function getTheme(): Theme {
   return (THEMES as readonly string[]).includes(saved ?? "") ? (saved as Theme) : DEFAULT_THEME;
 }
 
-/** Persists the choice and applies it immediately via the `data-theme` attribute that globals.css keys off of. */
 export function setTheme(theme: Theme) {
   window.localStorage.setItem(STORAGE_KEY, theme);
   applyTheme(theme);

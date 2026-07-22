@@ -137,6 +137,117 @@
   color: transparent;
 }
 
+/* ------------------------------------------------------------------ */
+/*  "Arctic Frost" theme — dark blue-gray + icy cyan/white accents     */
+/* ------------------------------------------------------------------ */
+[data-theme="arctic"] {
+  --color-bg: #0a1420;
+  --color-bg-soft: #08111c;
+  --color-panel: #0f1e2e;
+  --color-panel-2: #142639;
+  --color-line: rgba(148, 210, 230, 0.14);
+  --color-line-strong: rgba(148, 210, 230, 0.26);
+
+  --color-fg: #eaf6fb;
+  --color-muted: #8fb3c4;
+  --color-faint: #4f6b7c;
+
+  --color-accent: #67e8f9;
+  --color-accent-rgb: 103, 232, 249;
+  --color-accent-soft: #a5f3fc;
+  --color-cyan: #38bdf8;
+  --color-amber: #fbbf24;
+  --color-rose: #fb7185;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(103, 232, 249, 0.25), 0 0 28px -6px rgba(103, 232, 249, 0.45);
+}
+
+/* Hero background photo — misty blue mountains at dawn (Unsplash, free
+   license). Only shown in the Arctic theme; other themes keep their
+   existing hero background untouched. Apply the `.hero-visual` class to
+   the hero section's background wrapper. */
+[data-theme="arctic"] .hero-visual {
+  background-image:
+    linear-gradient(180deg, rgba(10, 20, 32, 0.55) 0%, rgba(10, 20, 32, 0.85) 65%, var(--color-bg) 100%),
+    url("https://images.unsplash.com/photo-1758637689499-b3b477a5fecb?fm=jpg&q=70&w=2400&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center 30%;
+}
+
+/* ------------------------------------------------------------------ */
+/*  "Arctic" theme — icy blue-gray + cyan/white, crisp and cool        */
+/* ------------------------------------------------------------------ */
+[data-theme="arctic"] {
+  --color-bg: #0a1220;
+  --color-bg-soft: #0c1526;
+  --color-panel: #101c30;
+  --color-panel-2: #14223a;
+  --color-line: rgba(148, 197, 224, 0.16);
+  --color-line-strong: rgba(148, 197, 224, 0.28);
+
+  --color-fg: #eaf4fb;
+  --color-muted: #8fa9c2;
+  --color-faint: #566d85;
+
+  --color-accent: #38bdf8;
+  --color-accent-rgb: 56, 189, 248;
+  --color-accent-soft: #7dd3fc;
+  --color-cyan: #a5f3fc;
+  --color-amber: #fbbf24;
+  --color-rose: #fb7185;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(56, 189, 248, 0.25), 0 0 28px -6px rgba(56, 189, 248, 0.45);
+}
+
+[data-theme="arctic"] .text-gradient {
+  background: linear-gradient(100deg, var(--color-fg) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Frosty mountain + king silhouette behind the hero — see hero-arctic-bg.svg */
+[data-theme="arctic"] .hero-arctic-bg {
+  background-image: url("/hero-arctic-bg.svg");
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: contain;
+}
+
+/* ------------------------------------------------------------------ */
+/*  "Arctic Frost" theme — dark blue-gray + icy cyan/white, crisp      */
+/* ------------------------------------------------------------------ */
+[data-theme="arctic"] {
+  --color-bg: #0a1520;
+  --color-bg-soft: #081019;
+  --color-panel: #0f1e2b;
+  --color-panel-2: #142737;
+  --color-line: rgba(125, 211, 252, 0.14);
+  --color-line-strong: rgba(125, 211, 252, 0.24);
+
+  --color-fg: #eaf6ff;
+  --color-muted: #8fb4cc;
+  --color-faint: #52738a;
+
+  --color-accent: #7dd3fc;
+  --color-accent-rgb: 125, 211, 252;
+  --color-accent-soft: #a5f3fc;
+  --color-cyan: #67e8f9;
+  --color-amber: #fbbf24;
+  --color-rose: #fb7185;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --shadow-glow: 0 0 0 1px rgba(125, 211, 252, 0.25), 0 0 28px -6px rgba(125, 211, 252, 0.45);
+}
+
 @layer base {
   * {
     border-color: var(--color-line);
