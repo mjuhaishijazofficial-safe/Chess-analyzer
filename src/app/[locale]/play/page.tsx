@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Board } from "@/components/board";
+import { Board, pieceImageUrl } from "@/components/board";
+import { getPieceSet } from "@/lib/piece-set";
 import { Engine } from "@/lib/engine";
 import {
   BotGame,
@@ -17,14 +18,8 @@ import {
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-// Unicode glyphs for the promotion picker, keyed by chess.js promotion letter.
+// Promotion picker offers all four pieces — same SVG set as the board.
 const PROMO_PIECES = ["q", "r", "b", "n"] as const;
-const PROMO_GLYPH: Record<(typeof PROMO_PIECES)[number], { w: string; b: string }> = {
-  q: { w: "♕", b: "♛" },
-  r: { w: "♖", b: "♜" },
-  b: { w: "♗", b: "♝" },
-  n: { w: "♘", b: "♞" },
-};
 
 export default function PlayPage() {
   const [started, setStarted] = useState(false);
@@ -41,6 +36,11 @@ export default function PlayPage() {
   const [pendingPromotion, setPendingPromotion] = useState<{ from: string; to: string } | null>(
     null,
   );
+  const [pieceSet, setPieceSet] = useState("cburnett");
+
+  useEffect(() => {
+    setPieceSet(getPieceSet());
+  }, []);
 
   const [viewPly, setViewPly] = useState<number | null>(null);
   const [autoPlaying, setAutoPlaying] = useState(false);
@@ -264,10 +264,15 @@ export default function PlayPage() {
                   <button
                     key={p}
                     onClick={() => choosePromotion(p)}
-                    className="grid h-12 w-12 place-items-center rounded border border-faint/40 text-3xl hover:bg-panel-2"
+                    className="grid h-14 w-14 place-items-center rounded border border-faint/40 bg-panel-2 hover:bg-panel-2/70"
                     aria-label={p}
                   >
-                    {PROMO_GLYPH[p][snapshot.humanColor]}
+                    <img
+                      src={pieceImageUrl(p, snapshot.humanColor, pieceSet)}
+                      alt={p}
+                      className="h-10 w-10"
+                      draggable={false}
+                    />
                   </button>
                 ))}
               </div>

@@ -23,7 +23,7 @@ const BADGE: Record<Classification, { color: string; symbol: string }> = {
 
 const PIECE_CODE: Record<string, string> = { k: "K", q: "Q", r: "R", b: "B", n: "N", p: "P" };
 
-function pieceImageUrl(type: string, color: "w" | "b", set: string): string {
+export function pieceImageUrl(type: string, color: "w" | "b", set: string): string {
   return `https://lichess1.org/assets/piece/${set}/${color}${PIECE_CODE[type]}.svg`;
 }
 
