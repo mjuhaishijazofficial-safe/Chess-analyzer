@@ -149,6 +149,13 @@ export default function PlayPage() {
     snapshot.status,
   );
 
+  // NEW: derive the last move (from/to squares) so the board can highlight
+  // it — this is what makes a fast bot move visible instead of "invisible".
+  const lastMoveEntry = snapshot.history[snapshot.history.length - 1];
+  const lastMove = lastMoveEntry
+    ? { from: lastMoveEntry.from, to: lastMoveEntry.to }
+    : null;
+
   return (
     <div className="mx-auto max-w-md px-4 py-8">
       <div className="mb-4 flex items-center justify-between">
@@ -166,10 +173,30 @@ export default function PlayPage() {
       <Board
         fen={snapshot.fen}
         orientation={snapshot.humanColor === "b" ? "black" : "white"}
+        lastMove={lastMove}
         onSquareClick={gameOver ? undefined : handleSquareClick}
         selectedSquare={selected}
         legalMoves={selected ? gameRef.current?.legalMovesFrom(selected) : undefined}
       />
+
+      {/* NEW: move history — pairs of (white, black) san moves, numbered like a scoresheet */}
+      {snapshot.history.length > 0 && (
+        <div className="mt-4 max-h-40 overflow-y-auto rounded border border-faint/30 p-2 text-sm leading-6 text-faint">
+          {Array.from({ length: Math.ceil(snapshot.history.length / 2) }).map(
+            (_, i) => {
+              const white = snapshot.history[i * 2];
+              const black = snapshot.history[i * 2 + 1];
+              return (
+                <span key={i} className="mr-3 inline-block">
+                  <span className="mr-1 text-faint/60">{i + 1}.</span>
+                  <span className="mr-2 text-fg">{white?.san}</span>
+                  {black && <span className="text-fg">{black.san}</span>}
+                </span>
+              );
+            },
+          )}
+        </div>
+      )}
 
       <div className="mt-6 flex gap-3">
         {!gameOver && (
