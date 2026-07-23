@@ -122,11 +122,24 @@ function IconReview() {
   );
 }
 
+function IconDuel() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
+      <path d="M4 16 8.5 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M6.5 6.5 3.5 3.5l-1 1 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 4 11.5 8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M13.5 6.5 16.5 3.5l1 1-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.5 11.5 11.5 8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", key: "overview", icon: <IconOverview /> },
   { href: "/stats", key: "stats", icon: <IconStats /> },
   { href: "/games", key: "games", icon: <IconGames /> },
   { href: "/play", key: "play", icon: <IconPlay /> },
+  { href: "/duel", key: "duel", icon: <IconDuel /> },
   { href: "/position", key: "position", icon: <IconPosition /> },
   { href: "/review", key: "review", icon: <IconReview /> },
   { href: "/puzzles", key: "puzzles", icon: <IconPuzzles /> },
@@ -166,20 +179,10 @@ export function SiteSidebar() {
       </nav>
 
       <div className="flex flex-col gap-0.5 border-t border-line pt-3">
-        <a
-          href="https://www.chess.com/news/view/published-data-api"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted transition hover:bg-panel-2 hover:text-fg"
-        >
+        <a href="https://www.chess.com/news/view/published-data-api" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted transition hover:bg-panel-2 hover:text-fg">
           API
         </a>
-        <a
-          href="https://github.com"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted transition hover:bg-panel-2 hover:text-fg"
-        >
+        <a href="https://github.com" target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted transition hover:bg-panel-2 hover:text-fg">
           GitHub
         </a>
       </div>
