@@ -35,6 +35,7 @@
     "blog": "Blog",
     "settings": "Parametres",
     "play": "ChessDeeper AI",
+    "duel": "Duel",
     "position": "Analyseur de position",
     "review": "Analyser un PGN",
     "compare": "Comparer des joueurs",
