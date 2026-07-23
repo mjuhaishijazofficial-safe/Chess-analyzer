@@ -103,11 +103,22 @@ function IconPlay() {
   );
 }
 
+function IconPosition() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
+      <rect x="3" y="3" width="14" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M3 8.5h14M8.5 3v14" stroke="currentColor" strokeWidth="1.1" opacity="0.5" />
+      <circle cx="12.5" cy="5.5" r="1.6" fill="currentColor" />
+    </svg>
+  );
+}
+
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", key: "overview", icon: <IconOverview /> },
   { href: "/stats", key: "stats", icon: <IconStats /> },
   { href: "/games", key: "games", icon: <IconGames /> },
   { href: "/play", key: "play", icon: <IconPlay /> },
+  { href: "/position", key: "position", icon: <IconPosition /> },
   { href: "/puzzles", key: "puzzles", icon: <IconPuzzles /> },
   { href: "/openings", key: "openings", icon: <IconOpenings /> },
   { href: "/blog", key: "blog", icon: <IconBlog /> },
