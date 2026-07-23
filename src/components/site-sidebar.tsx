@@ -113,12 +113,22 @@ function IconPosition() {
   );
 }
 
+function IconReview() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]">
+      <path d="M4 3.5h9l3 3v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-12a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M6.5 9h7M6.5 12h7M6.5 15h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", key: "overview", icon: <IconOverview /> },
   { href: "/stats", key: "stats", icon: <IconStats /> },
   { href: "/games", key: "games", icon: <IconGames /> },
   { href: "/play", key: "play", icon: <IconPlay /> },
   { href: "/position", key: "position", icon: <IconPosition /> },
+  { href: "/review", key: "review", icon: <IconReview /> },
   { href: "/puzzles", key: "puzzles", icon: <IconPuzzles /> },
   { href: "/openings", key: "openings", icon: <IconOpenings /> },
   { href: "/blog", key: "blog", icon: <IconBlog /> },
