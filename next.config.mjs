@@ -8,7 +8,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://www.gstatic.com",
   "img-src 'self' data: https:",
   "font-src 'self' data: https://www.gstatic.com",
-  "connect-src 'self' https://translate.googleapis.com https://translate-pa.googleapis.com",
+  "connect-src 'self' https://translate.googleapis.com https://translate-pa.googleapis.com https://lsdzbbcmpwzyzhzfvoni.supabase.co wss://lsdzbbcmpwzyzhzfvoni.supabase.co",
   "frame-src 'self' https://translate.google.com",
   "object-src 'none'",
   "base-uri 'self'",
