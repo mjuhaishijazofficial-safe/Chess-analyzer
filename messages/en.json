@@ -36,6 +36,7 @@
     "settings": "Settings",
     "play": "ChessDeeper AI",
     "position": "Position Analyzer",
+    "review": "Review a PGN",
     "compare": "Compare players",
     "journey": "My Chess Journey",
     "openMenu": "Open menu",
