@@ -87,19 +87,23 @@ export class DuelGame {
   }
 
   private assignSeatFromPresence() {
-    if (this.seat) return; // already claimed
     const state = this.channel.presenceState<{ joinedAt: number }>();
     const entries = Object.entries(state)
       .map(([id, metas]) => ({ id, joinedAt: metas[0]?.joinedAt ?? 0 }))
       .sort((a, b) => a.joinedAt - b.joinedAt);
 
     if (entries.length === 0) return;
-    // Earliest joiner is white, next is black. Anyone beyond that is a
-    // spectator for now (no UI for it yet — out of scope for v1).
-    const mySeat: Seat | null =
-      entries[0]?.id === this.clientId ? "w" : entries[1]?.id === this.clientId ? "b" : null;
 
-    this.seat = mySeat;
+    // Earliest joiner is white, next is black. Anyone beyond that is a
+    // spectator for now (no UI for it yet — out of scope for v1). Only
+    // claim a seat once — but keep recomputing `status` below on every
+    // sync, even after the seat is set, or a late-joining opponent would
+    // never flip us from "waiting" to "connected".
+    if (!this.seat) {
+      this.seat =
+        entries[0]?.id === this.clientId ? "w" : entries[1]?.id === this.clientId ? "b" : null;
+    }
+
     this.status = entries.length >= 2 ? "connected" : "waiting";
     this.primeBackgroundEval();
     this.emit();
