@@ -134,6 +134,40 @@ export default function DuelRoomPage() {
             </div>
           </div>
         )}
+
+        {snapshot.gameOverReason && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-bg/85 backdrop-blur-sm">
+            <div
+              className={`rounded-xl border p-6 text-center ${
+                snapshot.gameOverReason === "checkmate"
+                  ? snapshot.winner === snapshot.seat
+                    ? "border-accent bg-accent/10"
+                    : "border-rose/50 bg-rose/10"
+                  : "border-faint/40 bg-panel"
+              }`}
+            >
+              {snapshot.gameOverReason === "checkmate" ? (
+                <>
+                  <p
+                    className={`text-2xl font-bold ${
+                      snapshot.winner === snapshot.seat ? "text-accent" : "text-rose"
+                    }`}
+                  >
+                    {snapshot.winner === snapshot.seat ? "You Win! 🎉" : "You Lost"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">Checkmate</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-fg">Draw</p>
+                  <p className="mt-1 text-sm text-muted">
+                    {snapshot.gameOverReason === "stalemate" ? "By stalemate" : "Draw"}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Your own instant move analysis — never visible to your opponent */}
