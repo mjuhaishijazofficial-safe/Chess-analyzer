@@ -135,15 +135,15 @@ export default function DuelRoomPage() {
           </div>
         )}
 
-        {snapshot.gameOverReason && (
+        {snapshot.gameOverReason && snapshot.status === "connected" && (
           <div className="absolute inset-x-0 top-3 z-30 flex justify-center px-4">
             <div
-              className={`rounded-xl border px-5 py-3 text-center shadow-lg backdrop-blur-sm ${
+              className={`rounded-xl border-2 px-5 py-3 text-center shadow-xl ${
                 snapshot.gameOverReason === "checkmate"
                   ? snapshot.winner === snapshot.seat
-                    ? "border-accent bg-accent/20"
-                    : "border-rose/50 bg-rose/20"
-                  : "border-faint/40 bg-panel/90"
+                    ? "border-accent bg-bg"
+                    : "border-rose bg-bg"
+                  : "border-faint bg-bg"
               }`}
             >
               {snapshot.gameOverReason === "checkmate" ? (
@@ -155,12 +155,12 @@ export default function DuelRoomPage() {
                   >
                     {snapshot.winner === snapshot.seat ? "You Win! 🎉" : "You Lost"}
                   </p>
-                  <p className="text-xs text-muted">Checkmate</p>
+                  <p className="text-xs text-fg">Checkmate</p>
                 </>
               ) : (
                 <>
                   <p className="text-lg font-bold text-fg">Draw</p>
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-fg">
                     {snapshot.gameOverReason === "stalemate" ? "By stalemate" : "Draw"}
                   </p>
                 </>
