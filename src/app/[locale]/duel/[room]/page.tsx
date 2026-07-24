@@ -136,31 +136,31 @@ export default function DuelRoomPage() {
         )}
 
         {snapshot.gameOverReason && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-bg/85 backdrop-blur-sm">
+          <div className="absolute inset-x-0 top-3 z-30 flex justify-center px-4">
             <div
-              className={`rounded-xl border p-6 text-center ${
+              className={`rounded-xl border px-5 py-3 text-center shadow-lg backdrop-blur-sm ${
                 snapshot.gameOverReason === "checkmate"
                   ? snapshot.winner === snapshot.seat
-                    ? "border-accent bg-accent/10"
-                    : "border-rose/50 bg-rose/10"
-                  : "border-faint/40 bg-panel"
+                    ? "border-accent bg-accent/20"
+                    : "border-rose/50 bg-rose/20"
+                  : "border-faint/40 bg-panel/90"
               }`}
             >
               {snapshot.gameOverReason === "checkmate" ? (
                 <>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`text-lg font-bold ${
                       snapshot.winner === snapshot.seat ? "text-accent" : "text-rose"
                     }`}
                   >
                     {snapshot.winner === snapshot.seat ? "You Win! 🎉" : "You Lost"}
                   </p>
-                  <p className="mt-1 text-sm text-muted">Checkmate</p>
+                  <p className="text-xs text-muted">Checkmate</p>
                 </>
               ) : (
                 <>
-                  <p className="text-2xl font-bold text-fg">Draw</p>
-                  <p className="mt-1 text-sm text-muted">
+                  <p className="text-lg font-bold text-fg">Draw</p>
+                  <p className="text-xs text-muted">
                     {snapshot.gameOverReason === "stalemate" ? "By stalemate" : "Draw"}
                   </p>
                 </>
