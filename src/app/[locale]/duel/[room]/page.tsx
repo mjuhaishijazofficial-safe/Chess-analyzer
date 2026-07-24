@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { Board } from "@/components/board";
 import { DuelGame, type DuelSnapshot } from "@/lib/duel";
 import { CLASS_META } from "@/lib/chess-review";
+import { checkSquareOf } from "@/lib/bot";
+import { isSoundEnabled, playMoveSound, playCaptureSound, playCheckSound } from "@/lib/sound";
 
 export default function DuelRoomPage() {
   const params = useParams<{ room: string }>();
@@ -22,6 +24,18 @@ export default function DuelRoomPage() {
     gameRef.current = game;
     return () => game.destroy();
   }, [params.room]);
+
+  const prevHistoryLen = useRef(0);
+  useEffect(() => {
+    if (!snapshot) return;
+    if (snapshot.history.length > prevHistoryLen.current && isSoundEnabled()) {
+      const lastMove = snapshot.history[snapshot.history.length - 1];
+      if (snapshot.inCheck) playCheckSound();
+      else if (lastMove?.captured) playCaptureSound();
+      else playMoveSound();
+    }
+    prevHistoryLen.current = snapshot.history.length;
+  }, [snapshot]);
 
   async function copyLink() {
     await navigator.clipboard.writeText(window.location.href);
@@ -62,8 +76,19 @@ export default function DuelRoomPage() {
 
   const lastMoveEntry = snapshot.history[snapshot.history.length - 1];
   const lastMove = lastMoveEntry ? { from: lastMoveEntry.from, to: lastMoveEntry.to } : null;
+  const checkSquare = checkSquareOf(snapshot.fen);
   const isMyTurn = snapshot.seat !== null && snapshot.turn === snapshot.seat;
   const meta = snapshot.lastAnalysis ? CLASS_META[snapshot.lastAnalysis.classification] : null;
+
+  let gameOverText: string | null = null;
+  if (snapshot.gameOverReason === "checkmate") {
+    gameOverText =
+      snapshot.winner === snapshot.seat ? "Checkmate — you win! 🎉" : "Checkmate — you lost";
+  } else if (snapshot.gameOverReason === "stalemate") {
+    gameOverText = "Draw by stalemate";
+  } else if (snapshot.gameOverReason === "draw") {
+    gameOverText = "Draw";
+  }
 
   return (
     <div className="mx-auto max-w-md px-4 py-8">
@@ -71,7 +96,8 @@ export default function DuelRoomPage() {
         <span className="text-sm text-faint">
           {snapshot.status === "waiting" && "Waiting for your friend to join…"}
           {snapshot.status === "connected" &&
-            (snapshot.gameOver ? "Game over" : isMyTurn ? "Your move" : "Waiting on opponent…")}
+            (gameOverText ??
+              (isMyTurn ? "Your move" : snapshot.inCheck ? "Check! Waiting on opponent…" : "Waiting on opponent…"))}
           {snapshot.status === "connecting" && "Connecting…"}
         </span>
         <button onClick={copyLink} className="text-sm underline text-faint">
@@ -84,6 +110,7 @@ export default function DuelRoomPage() {
           fen={snapshot.fen}
           orientation={snapshot.seat === "b" ? "black" : "white"}
           lastMove={lastMove}
+          checkSquare={checkSquare}
           onSquareClick={snapshot.gameOver ? undefined : handleSquareClick}
           selectedSquare={selected}
           legalMoves={selected ? gameRef.current?.legalMovesFrom(selected) : undefined}
