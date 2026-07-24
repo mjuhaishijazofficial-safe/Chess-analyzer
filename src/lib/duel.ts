@@ -27,6 +27,8 @@ export interface OwnMoveAnalysis {
   classification: Classification;
 }
 
+export type GameOverReason = "checkmate" | "stalemate" | "draw" | null;
+
 export interface DuelSnapshot {
   fen: string;
   history: Move[];
@@ -34,6 +36,9 @@ export interface DuelSnapshot {
   seat: Seat | null; // your color — null until assigned
   status: ConnectionStatus;
   gameOver: boolean;
+  gameOverReason: GameOverReason;
+  winner: Seat | null;
+  inCheck: boolean;
   lastAnalysis: OwnMoveAnalysis | null; // only ever set from YOUR OWN moves
 }
 
@@ -101,6 +106,15 @@ export class DuelGame {
   }
 
   private emit() {
+    let gameOverReason: GameOverReason = null;
+    if (this.chess.isCheckmate()) gameOverReason = "checkmate";
+    else if (this.chess.isStalemate()) gameOverReason = "stalemate";
+    else if (this.chess.isDraw()) gameOverReason = "draw";
+
+    // On checkmate, the side to move is the one who got mated — the winner is the other side.
+    const winner: Seat | null =
+      gameOverReason === "checkmate" ? (this.chess.turn() === "w" ? "b" : "w") : null;
+
     this.onChange?.({
       fen: this.chess.fen(),
       history: this.chess.history({ verbose: true }),
@@ -108,6 +122,9 @@ export class DuelGame {
       seat: this.seat,
       status: this.status,
       gameOver: this.chess.isGameOver(),
+      gameOverReason,
+      winner,
+      inCheck: this.chess.isCheck(),
       lastAnalysis: this.lastAnalysis,
     });
   }
